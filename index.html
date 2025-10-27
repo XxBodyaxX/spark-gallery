@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spark Gallery</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#1a1a1a; color:#fff; min-height:100vh; padding-bottom:70px; }
+    body.halloween { background:#1a1a1a; --color-primary:#ff6b00; --color-secondary:#ff3d00; --bg-card:#3a3a3a; }
+    body.night { background:#0d0d23; --color-primary:#6e78ff; --color-secondary:#a299ff; --bg-card:#1b1b3b; }
+    body.day { background:#f4f4f4; color:#333; --color-primary:#ff6b00; --color-secondary:#ff3d00; --bg-card:#fff; }
+    body.cute { background:#fff0f7; color:#333; --color-primary:#ff6b9d; --color-secondary:#ffa4c9; --bg-card:#fff0f3; }
+    body.cyberpunk { background:#0a0e27; --color-primary:#00ffff; --color-secondary:#ff00ff; --bg-card:#252b48; }
+    body.autumn { background:#ffefd5; color:#333; --color-primary:#ff7f50; --color-secondary:#ffa07a; --bg-card:#fff5e6; }
+
+    .welcome-screen { position:fixed; top:0; left:0; right:0; bottom:0; background:inherit; z-index:3000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; }
+    .welcome-title { font-size:32px; font-weight:bold; color:var(--color-primary); margin-bottom:15px; text-align:center; }
+    .welcome-rules { background:var(--bg-card); padding:25px; border-radius:15px; margin:20px 0; max-width:400px; }
+    .welcome-rules h3 { color:var(--color-primary); margin-bottom:15px; text-align:center; }
+    .welcome-rules ul { list-style:none; padding-left:0; }
+    .welcome-rules li { padding:5px 0; padding-left:25px; position:relative; }
+    .welcome-rules li::before { content:'⚡'; position:absolute; left:0; }
+    .welcome-btn { padding:16px 40px; background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color:white; border:none; border-radius:12px; font-size:18px; font-weight:600; cursor:pointer; margin-top:20px; }
+
+    .navbar { position:fixed; bottom:0; left:0; right:0; background:var(--bg-card); display:flex; justify-content:space-around; padding:12px 0; z-index:1000; }
+    .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 20px; border-radius:12px; }
+    .nav-item.active { background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); }
+    .nav-label { font-size:12px; color:#999; }
+    .nav-item.active .nav-label { color:white; }
+
+    .page { display:none; padding:20px; }
+    .page.active { display:block; }
+
+    .profile-header { background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); padding:40px 20px 30px; border-radius:20px; text-align:center; color:white; margin-bottom:20px; }
+    .profile-avatar { width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center; font-size:48px; margin:0 auto 15px; border:4px solid white; overflow:hidden; }
+    .profile-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .profile-rank { display:inline-block; background:rgba(0,0,0,0.3); padding:6px 15px; border-radius:20px; font-size:14px; margin-top:10px; }
+
+    .profile-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:15px; }
+    .stat-card { background:var(--bg-card); padding:20px; border-radius:15px; text-align:center; }
+    .stat-value { font-size:24px; font-weight:bold; color:var(--color-primary); margin-bottom:5px; }
+    .stat-label { color:#999; font-size:14px; }
+
+    .gallery-controls { display:flex; gap:10px; margin-bottom:20px; }
+    .filter-select { flex:1; padding:12px; background:var(--bg-card); border:none; border-radius:10px; color:inherit; font-size:14px; }
+    .add-post-btn { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color:white; border:none; font-size:28px; cursor:pointer; }
+
+    .posts-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:15px; }
+    .post-card { background:var(--bg-card); border-radius:15px; overflow:hidden; position:relative; }
+    .post-media { width:100%; height:200px; object-fit:cover; }
+    .post-content { padding:12px; }
+    .post-description { font-size:14px; margin-bottom:8px; }
+    .post-meta { display:flex; justify-content:space-between; font-size:12px; color:#999; margin-top:8px; }
+    .post-actions { position:absolute; top:10px; right:10px; display:flex; gap:8px; z-index:10; }
+    .post-action-btn { width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,0.7); border:none; font-size:16px; cursor:pointer; }
+    .post-action-btn.active { background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); }
+
+    .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; overflow-y:auto; align-items:center; justify-content:center; }
+    .modal.active { display:flex; }
+    .modal-content { background:var(--bg-card); border-radius:20px; padding:25px; width:100%; max-width:500px; }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .modal-title { font-size:22px; font-weight:bold; color:var(--color-primary); }
+    .close-btn { font-size:28px; color:#999; cursor:pointer; background:none; border:none; }
+    .form-group { margin-bottom:20px; }
+    .form-label { display:block; font-size:14px; font-weight:600; color:var(--color-primary); margin-bottom:8px; }
+    .form-input, .form-textarea { width:100%; padding:12px; background:rgba(0,0,0,0.3); border:none; border-radius:10px; font-size:14px; color:inherit; font-family:inherit; }
+    .form-textarea { resize:vertical; min-height:100px; }
+    .char-counter { text-align:right; font-size:12px; color:#999; margin-top:5px; }
+    .submit-btn { width:100%; padding:16px; background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color:white; border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; }
+    .file-preview { margin-top:15px; border-radius:12px; overflow:hidden; display:none; }
+    .file-preview img, .file-preview video { width:100%; max-height:300px; object-fit:cover; }
+</style>
+</head>
+<body class="halloween">
+
+<div class="welcome-screen" id="welcomeScreen">
+    <h1 class="welcome-title">Добро пожаловать в Spark Gallery!</h1>
+    <div class="welcome-rules">
+        <h3>📋 Правила сообщества</h3>
+        <ul>
+            <li>Культурный контент, без порнографии и насилия</li>
+            <li>Без оскорблений, политических конфликтов</li>
+            <li>Будьте уважительны к другим пользователям</li>
+            <li>2 нарушения = блокировка</li>
+        </ul>
+    </div>
+    <button class="welcome-btn" onclick="closeWelcome()">Начать</button>
+</div>
+
+<div class="page active" id="profilePage">
+    <div class="profile-header">
+        <div class="profile-avatar" id="profileAvatar"></div>
+        <div id="profileName">Пользователь</div>
+        <div id="profileUsername">@username</div>
+        <div class="profile-rank" id="profileRank">🎃 Новичок</div>
+    </div>
+    <div class="profile-stats">
+        <div class="stat-card"><div class="stat-value" id="postsCount">0</div><div class="stat-label">Постов</div></div>
+        <div class="stat-card"><div class="stat-value" id="likesCount">0</div><div class="stat-label">Лайков</div></div>
+        <div class="stat-card"><div class="stat-value" id="favoritesCount">0</div><div class="stat-label">Избранное</div></div>
+    </div>
+</div>
+
+<div class="page" id="galleryPage">
+    <div class="gallery-controls">
+        <select class="filter-select" id="filterSelect">
+            <option value="all">Все посты</option>
+            <option value="day">Сегодня</option>
+            <option value="week">Эта неделя</option>
+            <option value="month">Этот месяц</option>
+        </select>
+        <button class="add-post-btn" onclick="openCreateModal()">+</button>
+    </div>
+    <div class="posts-grid" id="postsGrid"></div>
+</div>
+
+<div class="navbar">
+    <div class="nav-item active" onclick="switchPage('profile')">
+        <div class="nav-label">Профиль</div>
+    </div>
+    <div class="nav-item" onclick="switchPage('gallery')">
+        <div class="nav-label">Галерея</div>
+    </div>
+</div>
+
+<div class="modal" id="createModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Новая публикация</h2>
+            <button class="close-btn" onclick="closeCreateModal()">×</button>
+        </div>
+        <form id="createPostForm" onsubmit="createPost(event)">
+            <div class="form-group">
+                <label class="form-label">Фото/Видео</label>
+                <input type="file" id="fileInput" accept="image/*,video/*" onchange="handleFileSelect(event)">
+                <div class="file-preview" id="filePreview"></div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Название поста</label>
+                <input type="text" id="postName" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Описание</label>
+                <textarea id="description" class="form-textarea" oninput="updateWordCount()" required></textarea>
+                <div class="char-counter"><span id="charCount">0</span> / 150 слов</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Хэштеги</label>
+                <input type="text" id="hashtags" class="form-input" placeholder="#тег" oninput="formatHashtags()">
+            </div>
+            <button type="submit" class="submit-btn">Опубликовать</button>
+        </form>
+    </div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+let posts = [];
+let selectedFile = null;
+let adminUsername = "твой_ник"; // сюда твой ник Telegram
+let user = { firstName:"Пользователь", username:"user", avatar:"" };
+
+document.addEventListener("DOMContentLoaded", ()=>{
+    initTelegramUser();
+    renderPosts();
+});
+
+function initTelegramUser(){
+    if(tg.initDataUnsafe && tg.initDataUnsafe.user){
+        user.firstName = tg.initDataUnsafe.user.first_name;
+        user.username = tg.initDataUnsafe.user.username;
+        user.avatar = tg.initDataUnsafe.user.photo_url || "";
+    }
+    document.getElementById('profileName').textContent = user.firstName;
+    document.getElementById('profileUsername').textContent = "@"+user.username;
+    if(user.avatar){
+        document.getElementById('profileAvatar').innerHTML = `<img src="${user.avatar}" />`;
+    }else{
+        document.getElementById('profileAvatar').textContent = user.firstName.charAt(0).toUpperCase();
+    }
+}
+
+function closeWelcome(){
+    document.getElementById('welcomeScreen').style.display="none";
+}
+
+function switchPage(page){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById(page+"Page").classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    if(page==='profile') document.querySelector('.nav-item').classList.add('active');
+    else document.querySelectorAll('.nav-item')[1].classList.add('active');
+}
+
+function openCreateModal(){ document.getElementById('createModal').classList.add('active'); }
+function closeCreateModal(){ document.getElementById('createModal').classList.remove('active'); selectedFile=null; document.getElementById('filePreview').style.display="none"; }
+
+function handleFileSelect(e){
+    selectedFile = e.target.files[0];
+    const preview = document.getElementById('filePreview');
+    preview.innerHTML = "";
+    if(selectedFile){
+        if(selectedFile.type.startsWith("image")){
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(selectedFile);
+            preview.appendChild(img);
+        } else if(selectedFile.type.startsWith("video")){
+            const vid = document.createElement("video");
+            vid.src = URL.createObjectURL(selectedFile);
+            vid.controls = true;
+            preview.appendChild(vid);
+        }
+        preview.style.display="block";
+    }
+}
+
+function updateWordCount(){
+    const text = document.getElementById('description').value.trim();
+    const count = text.split(/\s+/).length;
+    document.getElementById('charCount').textContent = count;
+}
+
+function formatHashtags(){
+    let input = document.getElementById('hashtags');
+    input.value = input.value.replace(/\s+/g," #");
+    if(input.value && input.value[0]!="#") input.value="#"+input.value;
+}
+
+function createPost(e){
+    e.preventDefault();
+    if(!selectedFile) return alert("Выберите файл!");
+    const name = document.getElementById('postName').value;
+    const description = document.getElementById('description').value;
+    const hashtags = document.getElementById('hashtags').value;
+    const newPost = {id:Date.now(), author:user.username, name, description, hashtags, file:URL.createObjectURL(selectedFile), date:new Date()};
+    posts.unshift(newPost);
+    renderPosts();
+    closeCreateModal();
+}
+
+function renderPosts(){
+    const grid = document.getElementById('postsGrid');
+    grid.innerHTML="";
+    if(posts.length===0){
+        grid.innerHTML="<div style='text-align:center; padding:50px;'>Пока нет постов</div>";
+        return;
+    }
+    posts.forEach(post=>{
+        const card = document.createElement("div");
+        card.className="post-card";
+        let mediaHTML="";
+        if(post.file){
+            if(post.file.endsWith(".mp4") || post.file.endsWith(".webm")){
+                mediaHTML=`<video src="${post.file}" controls class="post-media"></video>`;
+            }else{
+                mediaHTML=`<img src="${post.file}" class="post-media"/>`;
+            }
+        }
+        card.innerHTML=`
+            ${mediaHTML}
+            <div class="post-content">
+                <b>${post.name}</b>
+                <p class="post-description">${post.description}</p>
+                <p>${post.hashtags}</p>
+                <div class="post-meta">${post.author} - ${new Date(post.date).toLocaleString()}</div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+</script>
+</body>
+</html>
