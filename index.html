@@ -1,516 +1,169 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spark Gallery</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height:100vh; padding-bottom:70px; transition:background 0.3s, color 0.3s; }
-    
-    /* Themes */
-    body.halloween { background:#1a1a1a; color:#fff; --color-primary:#ff6b00; --color-secondary:#ff3d00; --bg-card:#2a2a2a; --text-secondary:#999; }
-    body.night { background:#0a0e27; color:#e0e0e0; --color-primary:#667eea; --color-secondary:#764ba2; --bg-card:#1a1f3a; --text-secondary:#8a8fb0; }
-    body.autumn { background:#2d1810; color:#f5e6d3; --color-primary:#d97706; --color-secondary:#b45309; --bg-card:#3d2415; --text-secondary:#c9a88e; }
-    body.cyberpunk { background:#0d0221; color:#00ff9f; --color-primary:#ff006e; --color-secondary:#8338ec; --bg-card:#1a0b3d; --text-secondary:#b388ff; }
-    body.cute { background:#fff0f5; color:#4a4a4a; --color-primary:#ff69b4; --color-secondary:#ff1493; --bg-card:#ffe4f1; --text-secondary:#999; }
-    body.ocean { background:#001f3f; color:#e8f4f8; --color-primary:#00bfff; --color-secondary:#0080ff; --bg-card:#003366; --text-secondary:#7fb3d5; }
-
-    /* Welcome screen */
-    .welcome-screen { position:fixed; top:0; left:0; right:0; bottom:0; background:inherit; z-index:3000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; }
-    .welcome-title { font-size:32px; font-weight:bold; color:var(--color-primary); margin-bottom:15px; text-align:center; }
-    .welcome-rules { background:var(--bg-card); padding:25px; border-radius:15px; margin:20px 0; max-width:400px; }
-    .welcome-rules h3 { color:var(--color-primary); margin-bottom:15px; text-align:center; }
-    .welcome-rules ul { list-style:none; padding-left:0; }
-    .welcome-rules li { padding:5px 0; padding-left:25px; position:relative; }
-    .welcome-rules li::before { content:'⚡'; position:absolute; left:0; }
-    .welcome-btn { padding:16px 40px; background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color:white; border:none; border-radius:12px; font-size:18px; font-weight:600; cursor:pointer; margin-top:20px; }
-
-    /* Navbar */
-    .navbar { position:fixed; bottom:0; left:0; right:0; background:var(--bg-card); display:flex; justify-content:space-around; padding:12px 0; z-index:1000; box-shadow:0 -2px 10px rgba(0,0,0,0.3); }
-    .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 20px; border-radius:12px; transition:all 0.3s; }
-    .nav-item:hover { transform:translateY(-2px); }
-    .nav-item.active { background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); }
-    .nav-icon { font-size:20px; }
-    .nav-label { font-size:12px; color:var(--text-secondary); }
-    .nav-item.active .nav-label { color:white; }
-
-    /* Pages */
-    .page { display:none; padding:20px; animation:fadeIn 0.3s; }
+  <meta charset="UTF-8" />
+  <title>Spark Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body { margin:0; font-family:sans-serif; transition:background 0.3s,color 0.3s; }
+    .page { display:none; padding:20px; }
     .page.active { display:block; }
-    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-
-    /* Profile */
-    .profile-header { background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); padding:40px 20px 30px; border-radius:20px; text-align:center; color:white; margin-bottom:20px; }
-    .profile-avatar { width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center; font-size:48px; margin:0 auto 15px; border:4px solid white; overflow:hidden; }
-    .profile-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-    .profile-rank { display:inline-block; background:rgba(0,0,0,0.3); padding:6px 15px; border-radius:20px; font-size:14px; margin-top:10px; }
-
-    .profile-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:15px; margin-bottom:20px; }
-    .stat-card { background:var(--bg-card); padding:20px; border-radius:15px; text-align:center; cursor:pointer; transition:transform 0.2s; }
-    .stat-card:hover { transform:scale(1.05); }
-    .stat-value { font-size:24px; font-weight:bold; color:var(--color-primary); margin-bottom:5px; }
-    .stat-label { color:var(--text-secondary); font-size:14px; }
-
-    .favorites-section { background:var(--bg-card); padding:20px; border-radius:15px; margin-top:20px; }
-    .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
-    .section-title { font-size:18px; font-weight:bold; color:var(--color-primary); }
-    .toggle-privacy { padding:8px 16px; background:rgba(0,0,0,0.3); border:none; border-radius:20px; color:inherit; font-size:12px; cursor:pointer; }
-
-    /* Gallery */
-    .gallery-controls { display:flex; gap:10px; margin-bottom:20px; }
-    .filter-select { flex:1; padding:12px; background:var(--bg-card); border:none; border-radius:10px; color:inherit; font-size:14px; }
-    .add-post-btn { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color:white; border:none; font-size:28px; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.3); transition:transform 0.2s; }
-    .add-post-btn:hover { transform:scale(1.1); }
-
-    .posts-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:15px; }
-    .post-card { background:var(--bg-card); border-radius:15px; overflow:hidden; position:relative; transition:transform 0.2s; }
-    .post-card:hover { transform:translateY(-5px); }
-    .post-media { width:100%; height:200px; object-fit:cover; }
-    .post-content { padding:12px; }
-    .post-description { font-size:14px; margin-bottom:8px; }
-    .post-actions { display:flex; gap:15px; align-items:center; margin-top:10px; }
-    .action-btn { background:none; border:none; font-size:20px; cursor:pointer; transition:transform 0.2s; display:flex; align-items:center; gap:5px; color:inherit; }
-    .action-btn:hover { transform:scale(1.2); }
-    .action-btn.liked { color:#ff006e; }
-    .action-btn.favorited { color:#ffd700; }
-    .action-count { font-size:12px; }
-    .delete-btn { position:absolute; top:10px; right:10px; background:rgba(255,0,0,0.7); color:white; border:none; border-radius:50%; width:35px; height:35px; font-size:18px; cursor:pointer; z-index:10; }
-    .delete-btn.confirm { animation:pulse 0.5s infinite; background:rgba(255,0,0,0.9); }
-    @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
-    .post-meta { display:flex; justify-content:space-between; font-size:12px; color:var(--text-secondary); margin-top:8px; }
-
-    /* Settings */
-    .settings-section { background:var(--bg-card); padding:20px; border-radius:15px; margin-bottom:20px; }
-    .settings-title { font-size:20px; font-weight:bold; color:var(--color-primary); margin-bottom:20px; }
-    .theme-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:15px; }
-    .theme-card { padding:20px; border-radius:12px; text-align:center; cursor:pointer; transition:all 0.3s; border:3px solid transparent; }
-    .theme-card.active { border-color:var(--color-primary); transform:scale(1.05); }
-    .theme-card.halloween { background:linear-gradient(135deg, #ff6b00, #ff3d00); }
-    .theme-card.night { background:linear-gradient(135deg, #667eea, #764ba2); }
-    .theme-card.autumn { background:linear-gradient(135deg, #d97706, #b45309); }
-    .theme-card.cyberpunk { background:linear-gradient(135deg, #ff006e, #8338ec); }
-    .theme-card.cute { background:linear-gradient(135deg, #ff69b4, #ff1493); }
-    .theme-card.ocean { background:linear-gradient(135deg, #00bfff, #0080ff); }
-    .theme-name { color:white; font-weight:600; margin-top:10px; }
-
-    /* Modal */
-    .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; overflow-y:auto; align-items:center; justify-content:center; }
+    .navbar { position:fixed; bottom:0; left:0; width:100%; display:flex; background:#222; color:#fff; }
+    .nav-item { flex:1; text-align:center; padding:10px; cursor:pointer; }
+    .nav-item.active { background:#444; }
+    .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; z-index:1000; }
     .modal.active { display:flex; }
-    .modal-content { background:var(--bg-card); border-radius:20px; padding:25px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; }
-    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    .modal-title { font-size:22px; font-weight:bold; color:var(--color-primary); }
-    .close-btn { font-size:28px; color:var(--text-secondary); cursor:pointer; background:none; border:none; }
-    .form-group { margin-bottom:20px; }
-    .form-label { display:block; font-size:14px; font-weight:600; color:var(--color-primary); margin-bottom:8px; }
-    .form-input, .form-textarea { width:100%; padding:12px; background:rgba(0,0,0,0.3); border:none; border-radius:10px; font-size:14px; color:inherit; font-family:inherit; }
-    .form-textarea { resize:vertical; min-height:100px; }
-    .char-counter { text-align:right; font-size:12px; color:var(--text-secondary); margin-top:5px; }
-    .submit-btn { width:100%; padding:16px; background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color:white; border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; }
-    .file-preview { margin-top:15px; border-radius:12px; overflow:hidden; display:none; }
-    .file-preview img, .file-preview video { width:100%; max-height:300px; object-fit:cover; }
-
-    .interactions-list { margin-top:15px; }
-    .interaction-item { display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; margin-bottom:8px; }
-    .user-info { display:flex; align-items:center; gap:10px; }
-    .user-avatar { width:35px; height:35px; border-radius:50%; background:var(--color-primary); display:flex; align-items:center; justify-content:center; font-size:16px; }
-    .interaction-type { font-size:18px; }
-
-    .confirm-dialog { background:var(--bg-card); padding:25px; border-radius:15px; text-align:center; }
-    .confirm-dialog h3 { color:var(--color-primary); margin-bottom:15px; }
-    .confirm-buttons { display:flex; gap:10px; margin-top:20px; }
-    .confirm-buttons button { flex:1; padding:12px; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
-    .btn-cancel { background:var(--text-secondary); color:white; }
-    .btn-confirm { background:linear-gradient(135deg, #ff0000, #cc0000); color:white; }
-</style>
+    .modal-content { background:#fff; padding:20px; border-radius:8px; width:90%; max-width:500px; }
+    .post-card { background:#eee; margin:10px 0; padding:10px; border-radius:8px; }
+    .post-media { width:100%; border-radius:8px; }
+    .action-btn { margin-right:10px; cursor:pointer; }
+    .liked { color:red; }
+    .favorited { color:gold; }
+  </style>
 </head>
-<body class="halloween">
-
-<div class="welcome-screen" id="welcomeScreen">
-    <h1 class="welcome-title">Добро пожаловать в Spark Gallery!</h1>
-    <div class="welcome-rules">
-        <h3>📋 Правила сообщества</h3>
-        <ul>
-            <li>Культурный контент, без неприемлемых материалов</li>
-            <li>Без оскорблений, политических конфликтов</li>
-            <li>Будьте уважительны к другим пользователям</li>
-            <li>2 нарушения = блокировка</li>
-        </ul>
-    </div>
-    <button class="welcome-btn" id="welcomeBtn">Начать</button>
-</div>
+<body>
 
 <div class="page active" id="profilePage">
-    <div class="profile-header">
-        <div class="profile-avatar" id="profileAvatar"></div>
-        <div id="profileName">Пользователь</div>
-        <div id="profileUsername">@username</div>
-        <div class="profile-rank" id="profileRank">⚡ Новичок</div>
-    </div>
-    <div class="profile-stats">
-        <div class="stat-card"><div class="stat-value" id="postsCount">0</div><div class="stat-label">Постов</div></div>
-        <div class="stat-card"><div class="stat-value" id="likesCount">0</div><div class="stat-label">Лайков</div></div>
-        <div class="stat-card" id="favoritesCard"><div class="stat-value" id="favoritesCount">0</div><div class="stat-label">Избранное</div></div>
-    </div>
-    <div class="favorites-section">
-        <div class="section-header">
-            <h3 class="section-title">Мои избранные</h3>
-            <button class="toggle-privacy" id="togglePrivacyBtn">
-                <span id="privacyStatus">🔒 Только я</span>
-            </button>
-        </div>
-        <div id="myFavoritesList"></div>
-    </div>
+  <h2>Профиль</h2>
+  <p>Имя: <span id="profileName"></span></p>
+  <p>Ник: <span id="profileUsername"></span></p>
+  <p>Титул: <span id="profileRank">Новичок</span></p>
 </div>
 
 <div class="page" id="galleryPage">
-    <div class="gallery-controls">
-        <select class="filter-select" id="filterSelect">
-            <option value="all">Все посты</option>
-            <option value="day">Сегодня</option>
-            <option value="week">Эта неделя</option>
-            <option value="month">Этот месяц</option>
-        </select>
-        <button class="add-post-btn" id="addPostBtn">+</button>
-    </div>
-    <div class="posts-grid" id="postsGrid"></div>
+  <h2>Галерея</h2>
+  <button onclick="openModal()">Создать пост</button>
+  <div id="postsGrid"></div>
 </div>
 
 <div class="page" id="settingsPage">
-    <div class="settings-section">
-        <h2 class="settings-title">⚙️ Настройки</h2>
-        <h3 style="color:var(--color-primary); margin-bottom:15px;">Выберите тему</h3>
-        <div class="theme-grid" id="themeGrid">
-            <div class="theme-card halloween" data-theme="halloween">
-                <div style="font-size:40px;">🎃</div>
-                <div class="theme-name">Хэллоуин</div>
-            </div>
-            <div class="theme-card night" data-theme="night">
-                <div style="font-size:40px;">🌙</div>
-                <div class="theme-name">Ночная</div>
-            </div>
-            <div class="theme-card autumn" data-theme="autumn">
-                <div style="font-size:40px;">🍂</div>
-                <div class="theme-name">Осенняя</div>
-            </div>
-            <div class="theme-card cyberpunk" data-theme="cyberpunk">
-                <div style="font-size:40px;">🤖</div>
-                <div class="theme-name">Киберпанк</div>
-            </div>
-            <div class="theme-card cute" data-theme="cute">
-                <div style="font-size:40px;">💖</div>
-                <div class="theme-name">Няшная</div>
-            </div>
-            <div class="theme-card ocean" data-theme="ocean">
-                <div style="font-size:40px;">🌊</div>
-                <div class="theme-name">Океан</div>
-            </div>
-        </div>
-    </div>
+  <h2>Настройки</h2>
+  <label>Тема:
+    <select id="themeSelect">
+      <option value="light">Светлая</option>
+      <option value="dark">Тёмная</option>
+      <option value="halloween">Halloween</option>
+    </select>
+  </label>
 </div>
 
 <div class="navbar">
-    <div class="nav-item active" data-page="profile">
-        <div class="nav-icon">👤</div>
-        <div class="nav-label">Профиль</div>
-    </div>
-    <div class="nav-item" data-page="gallery">
-        <div class="nav-icon">🖼️</div>
-        <div class="nav-label">Галерея</div>
-    </div>
-    <div class="nav-item" data-page="settings">
-        <div class="nav-icon">⚙️</div>
-        <div class="nav-label">Настройки</div>
-    </div>
+  <div class="nav-item active" data-page="profile">👤</div>
+  <div class="nav-item" data-page="gallery">🖼️</div>
+  <div class="nav-item" data-page="settings">⚙️</div>
 </div>
 
 <div class="modal" id="createModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title">Новая публикация</h2>
-            <button class="close-btn" id="closeCreateBtn">×</button>
-        </div>
-        <form id="createPostForm">
-            <div class="form-group">
-                <label class="form-label">Фото/Видео</label>
-                <input type="file" id="fileInput" accept="image/*,video/*">
-                <div class="file-preview" id="filePreview"></div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Название поста</label>
-                <input type="text" id="postName" class="form-input" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Описание</label>
-                <textarea id="description" class="form-textarea" required></textarea>
-                <div class="char-counter"><span id="charCount">0</span> / 150 слов</div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Хэштеги</label>
-                <input type="text" id="hashtags" class="form-input" placeholder="#тег">
-            </div>
-            <button type="submit" class="submit-btn">Опубликовать</button>
-        </form>
-    </div>
-</div>
-
-<div class="modal" id="interactionsModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title" id="interactionsTitle">Взаимодействия</h2>
-            <button class="close-btn" id="closeInteractionsBtn">×</button>
-        </div>
-        <div class="interactions-list" id="interactionsList"></div>
-    </div>
-</div>
-
-<div class="modal" id="favoritesModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title">Избранные посты</h2>
-            <button class="close-btn" id="closeFavoritesBtn">×</button>
-        </div>
-        <div class="posts-grid" id="favoritesGrid"></div>
-    </div>
-</div>
-
-<div class="modal" id="confirmModal">
-    <div class="confirm-dialog">
-        <h3>⚠️ Подтверждение удаления</h3>
-        <p>Вы действительно хотите удалить этот пост?</p>
-        <div class="confirm-buttons">
-            <button class="btn-cancel" id="cancelDeleteBtn">Отмена</button>
-            <button class="btn-confirm" id="confirmDeleteBtn">Удалить</button>
-        </div>
-    </div>
+  <div class="modal-content">
+    <h3>Новый пост</h3>
+    <form id="createPostForm">
+      <input type="file" id="fileInput" accept="image/*,video/*" required><br><br>
+      <input type="text" id="postName" placeholder="Название" required><br><br>
+      <textarea id="description" placeholder="Описание" required></textarea><br><br>
+      <input type="text" id="hashtags" placeholder="#теги"><br><br>
+      <button type="submit">Опубликовать</button>
+    </form>
+  </div>
 </div>
 
 <script>
-const tg = window.Telegram?.WebApp || {ready:()=>{},expand:()=>{},initDataUnsafe:{}};
-tg.ready();
-tg.expand();
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  const user = tg.initDataUnsafe.user || { username: "guest", first_name: "Гость" };
+  const isAdmin = user.username === "GreatTeacherOn1dzuka";
+  document.getElementById("profileName").textContent = user.first_name;
+  document.getElementById("profileUsername").textContent = "@" + user.username;
 
-let posts = [];
-let selectedFile = null;
-let adminUsername = "твой_ник"; // Замените на ваш Telegram username
-let user = { firstName:"Пользователь", username:"user", avatar:"", theme:"halloween", favoritesPublic:false };
-let deletePostId = null;
-let deleteClickCount = {};
+  let posts = [];
 
-// Инициализация при загрузке
-document.addEventListener("DOMContentLoaded", ()=>{
-    loadUserData();
-    initTelegramUser();
-    loadPosts();
-    applyTheme();
-    updateStats();
-    initEventListeners();
-});
-
-function initEventListeners(){
-    // Welcome
-    document.getElementById('welcomeBtn').addEventListener('click', closeWelcome);
-    
-    // Navigation
-    document.querySelectorAll('.nav-item').forEach(item=>{
-        item.addEventListener('click', ()=>switchPage(item.dataset.page));
+  document.querySelectorAll(".nav-item").forEach(item => {
+    item.addEventListener("click", () => {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById(item.dataset.page + "Page").classList.add("active");
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      item.classList.add("active");
     });
-    
-    // Create post
-    document.getElementById('addPostBtn').addEventListener('click', openCreateModal);
-    document.getElementById('closeCreateBtn').addEventListener('click', closeCreateModal);
-    document.getElementById('createPostForm').addEventListener('submit', createPost);
-    document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-    document.getElementById('description').addEventListener('input', updateWordCount);
-    document.getElementById('hashtags').addEventListener('input', formatHashtags);
-    
-    // Filter
-    document.getElementById('filterSelect').addEventListener('change', renderPosts);
-    
-    // Theme
-    document.querySelectorAll('.theme-card').forEach(card=>{
-        card.addEventListener('click', ()=>changeTheme(card.dataset.theme));
-    });
-    
-    // Privacy
-    document.getElementById('togglePrivacyBtn').addEventListener('click', toggleFavoritesPrivacy);
-    
-    // Favorites
-    document.getElementById('favoritesCard').addEventListener('click', openFavoritesModal);
-    document.getElementById('closeFavoritesBtn').addEventListener('click', closeFavoritesModal);
-    
-    // Interactions
-    document.getElementById('closeInteractionsBtn').addEventListener('click', closeInteractionsModal);
-    
-    // Confirm delete
-    document.getElementById('cancelDeleteBtn').addEventListener('click', closeConfirmModal);
-    document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
-}
+  });
 
-function initTelegramUser(){
-    if(tg.initDataUnsafe && tg.initDataUnsafe.user){
-        user.firstName = tg.initDataUnsafe.user.first_name || "Пользователь";
-        user.username = tg.initDataUnsafe.user.username || "user";
-        user.avatar = tg.initDataUnsafe.user.photo_url || "";
-    }
-    document.getElementById('profileName').textContent = user.firstName;
-    document.getElementById('profileUsername').textContent = "@"+user.username;
-    if(user.avatar){
-        document.getElementById('profileAvatar').innerHTML = `<img src="${user.avatar}" />`;
-    }else{
-        document.getElementById('profileAvatar').textContent = user.firstName.charAt(0).toUpperCase();
-    }
-}
+  document.getElementById("themeSelect").addEventListener("change", e => {
+    document.body.className = e.target.value;
+  });
 
-function loadUserData(){
-    const saved = localStorage.getItem('sparkGalleryUser');
-    if(saved){
-        const data = JSON.parse(saved);
-        user = {...user, ...data};
-    }
-}
+  function openModal() {
+    document.getElementById("createModal").classList.add("active");
+  }
 
-function saveUserData(){
-    localStorage.setItem('sparkGalleryUser', JSON.stringify(user));
-}
-
-function loadPosts(){
-    const saved = localStorage.getItem('sparkGalleryPosts');
-    if(saved){
-        posts = JSON.parse(saved);
-    }
-    renderPosts();
-}
-
-function savePosts(){
-    localStorage.setItem('sparkGalleryPosts', JSON.stringify(posts));
-}
-
-function closeWelcome(){
-    document.getElementById('welcomeScreen').style.display="none";
-}
-
-function switchPage(page){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById(page+"Page").classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
-}
-
-function changeTheme(theme){
-    user.theme = theme;
-    saveUserData();
-    applyTheme();
-}
-
-function applyTheme(){
-    document.body.className = user.theme;
-    document.querySelectorAll('.theme-card').forEach(card=>{
-        card.classList.remove('active');
-        if(card.dataset.theme === user.theme){
-            card.classList.add('active');
-        }
-    });
-}
-
-function toggleFavoritesPrivacy(){
-    user.favoritesPublic = !user.favoritesPublic;
-    saveUserData();
-    document.getElementById('privacyStatus').textContent = user.favoritesPublic ? '🌍 Всем видно' : '🔒 Только я';
-}
-
-function openCreateModal(){ 
-    document.getElementById('createModal').classList.add('active'); 
-}
-
-function closeCreateModal(){ 
-    document.getElementById('createModal').classList.remove('active'); 
-    selectedFile=null; 
-    document.getElementById('filePreview').style.display="none";
-    document.getElementById('createPostForm').reset();
-    document.getElementById('charCount').textContent = '0';
-}
-
-function handleFileSelect(e){
-    selectedFile = e.target.files[0];
-    const preview = document.getElementById('filePreview');
-    preview.innerHTML = "";
-    if(selectedFile){
-        if(selectedFile.type.startsWith("image")){
-            const img = document.createElement("img");
-            img.src = URL.createObjectURL(selectedFile);
-            preview.appendChild(img);
-        } else if(selectedFile.type.startsWith("video")){
-            const vid = document.createElement("video");
-            vid.src = URL.createObjectURL(selectedFile);
-            vid.controls = true;
-            preview.appendChild(vid);
-        }
-        preview.style.display="block";
-    }
-}
-
-function updateWordCount(){
-    const text = document.getElementById('description').value.trim();
-    const count = text ? text.split(/\s+/).length : 0;
-    document.getElementById('charCount').textContent = count;
-}
-
-function formatHashtags(){
-    let input = document.getElementById('hashtags');
-    input.value = input.value.replace(/\s+/g," #");
-    if(input.value && input.value[0]!="#") input.value="#"+input.value;
-}
-
-function createPost(e){
+  document.getElementById("createPostForm").addEventListener("submit", e => {
     e.preventDefault();
-    if(!selectedFile) return alert("Выберите файл!");
-    const name = document.getElementById('postName').value;
-    const description = document.getElementById('description').value;
-    const hashtags = document.getElementById('hashtags').value;
-    const newPost = {
-        id:Date.now(), 
-        author:user.username, 
-        authorName:user.firstName,
-        name, 
-        description, 
-        hashtags, 
-        file:URL.createObjectURL(selectedFile), 
-        fileType:selectedFile.type,
-        date:new Date().toISOString(),
-        likes:[],
-        dislikes:[],
-        favorites:[]
+    const file = document.getElementById("fileInput").files[0];
+    const name = document.getElementById("postName").value;
+    const desc = document.getElementById("description").value;
+    const tags = document.getElementById("hashtags").value.split(" ").filter(t => t.startsWith("#"));
+    const url = URL.createObjectURL(file);
+    const type = file.type.startsWith("image") ? "image" : "video";
+    const post = {
+      id: Date.now(),
+      author: user.username,
+      name,
+      desc,
+      tags,
+      url,
+      type,
+      likes: [],
+      favorited: false
     };
-    posts.unshift(newPost);
-    savePosts();
+    posts.unshift(post);
     renderPosts();
-    updateStats();
-    closeCreateModal();
-}
+    document.getElementById("createModal").classList.remove("active");
+    e.target.reset();
+  });
 
-function renderPosts(){
-    const grid = document.getElementById('postsGrid');
-    const filter = document.getElementById('filterSelect').value;
-    grid.innerHTML="";
-    
-    let filteredPosts = posts.filter(post=>{
-        const postDate = new Date(post.date);
-        const now = new Date();
-        const diffDays = (now - postDate) / (1000 * 60 * 60 * 24);
-        
-        if(filter === 'day') return diffDays < 1;
-        if(filter === 'week') return diffDays < 7;
-        if(filter === 'month') return diffDays < 30;
-        return true;
+  function renderPosts() {
+    const grid = document.getElementById("postsGrid");
+    grid.innerHTML = "";
+    posts.forEach(post => {
+      const card = document.createElement("div");
+      card.className = "post-card";
+      card.innerHTML = `
+        ${post.type === "image" ? `<img src="${post.url}" class="post-media">` : `<video src="${post.url}" class="post-media" controls></video>`}
+        <h4>${post.name}</h4>
+        <p>${post.desc}</p>
+        <p>${post.tags.join(" ")}</p>
+        <button class="action-btn ${post.likes.includes(user.username) ? 'liked' : ''}" onclick="toggleLike(${post.id})">❤️ ${post.likes.length}</button>
+        <button class="action-btn ${post.favorited ? 'favorited' : ''}" onclick="toggleFav(${post.id})">⭐</button>
+        ${isAdmin || post.author === user.username ? `<button class="action-btn" onclick="deletePost(${post.id})">🗑️</button>` : ""}
+        <small>Автор: ${post.author}</small>
+      `;
+      grid.appendChild(card);
     });
-    
-    if(filteredPosts.length===0){
-        grid.innerHTML="<div style='grid-column:1/-1; text-align:center; padding:50px; color:var(--text-secondary);'>Пока нет постов</div>";
-        return;
+  }
+
+  function toggleLike(id) {
+    const post = posts.find(p => p.id === id);
+    if (!post) return;
+    const i = post.likes.indexOf(user.username);
+    if (i >= 0) post.likes.splice(i, 1);
+    else post.likes.push(user.username);
+    renderPosts();
+  }
+
+  function toggleFav(id) {
+    const post = posts.find(p => p.id === id);
+    if (!post) return;
+    post.favorited = !post.favorited;
+    renderPosts();
+  }
+
+  function deletePost(id) {
+    if (confirm("Удалить пост?")) {
+      if (confirm("Точно удалить?")) {
+        posts = posts.filter(p => p.id !== id);
+        renderPosts();
+      }
     }
-    
-    filteredPosts.forEach(post=>{
-        const card = document.createElement("div");
-        card.className="post
+  }
+</script>
+
+</body>
+</html>
