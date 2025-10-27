@@ -6,162 +6,123 @@
 <title>Spark Галерея</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#1a1a1a; color:#fff; min-height:100vh; padding-bottom:70px; }
-    .login-screen, .welcome-screen, .page, .modal { position:fixed; top:0; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:inherit; z-index:4000; padding:30px; }
-    .hidden { display:none !important; }
-    .login-logo, .welcome-logo { font-size:80px; margin-bottom:20px; }
-    .login-title, .welcome-title { font-size:32px; font-weight:bold; margin-bottom:30px; color:#ff6b00; text-align:center; }
-    .login-buttons, .theme-options { display:flex; flex-direction:column; gap:15px; width:100%; max-width:350px; }
-    .login-btn, .theme-btn, .submit-btn, .logout-btn, .welcome-btn { padding:16px 30px; border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; }
-    .login-btn { background:linear-gradient(135deg,#ff6b00 0%,#ff3d00 100%); color:white; display:flex; align-items:center; justify-content:center; gap:10px; }
-    .login-btn.google { background:white; color:#333; }
-    .welcome-rules { background:#3a3a3a; padding:25px; border-radius:15px; margin:20px 0; max-width:400px; }
-    .welcome-rules h3 { color:#ff6b00; margin-bottom:15px; }
-    .welcome-rules ul { list-style:none; padding-left:20px; }
-    .welcome-rules li::before { content:'🎃'; position:absolute; left:0; }
-    .welcome-btn { background:linear-gradient(135deg,#ff6b00 0%,#ff3d00 100%); color:white; margin-top:10px; }
-    .navbar { position:fixed; bottom:0; left:0; right:0; background:#3a3a3a; display:flex; justify-content:space-around; padding:12px 0; z-index:1000; }
-    .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 20px; border-radius:12px; }
-    .nav-item.active { background:linear-gradient(135deg,#ff6b00 0%,#ff3d00 100%); }
-    .nav-icon { font-size:24px; }
-    .nav-label { font-size:12px; color:#999; }
-    .nav-item.active .nav-label { color:white; }
-    .page { display:none; padding:20px; overflow-y:auto; top:0; bottom:60px; }
-    .page.active { display:block; }
-    .profile-header { background:linear-gradient(135deg,#ff6b00 0%,#ff3d00 100%); padding:40px 20px 30px; border-radius:20px; text-align:center; color:white; margin-bottom:20px; position:relative; }
-    .profile-avatar { width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center; font-size:48px; margin:0 auto 15px; border:4px solid white; }
-    .profile-rank { display:inline-block; background:rgba(0,0,0,0.3); padding:6px 15px; border-radius:20px; font-size:14px; margin-top:10px; }
-    .profile-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:15px; }
-    .stat-card { background:#3a3a3a; padding:20px; border-radius:15px; text-align:center; }
-    .stat-value { font-size:24px; font-weight:bold; color:#ff6b00; margin-bottom:5px; }
-    .stat-label { color:#999; font-size:14px; }
-    .gallery-controls { display:flex; gap:10px; margin-bottom:20px; }
-    .filter-select { flex:1; padding:12px; background:#3a3a3a; border:none; border-radius:10px; color:inherit; font-size:14px; }
-    .add-post-btn { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#ff6b00 0%,#ff3d00 100%); color:white; border:none; font-size:28px; cursor:pointer; }
-    .posts-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:15px; }
-    .post-card { background:#3a3a3a; border-radius:15px; overflow:hidden; position:relative; }
-    .post-media { width:100%; height:200px; object-fit:cover; }
-    .post-actions { position:absolute; top:10px; right:10px; display:flex; gap:8px; z-index:10; }
-    .post-action-btn { width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,0.7); border:none; font-size:16px; cursor:pointer; color:white; display:flex; align-items:center; justify-content:center; }
-    .post-action-btn.active { background:linear-gradient(135deg,#ff6b00 0%,#ff3d00 100%); }
-    .post-content { padding:12px; }
-    .post-description { font-size:14px; margin-bottom:8px; }
-    .post-meta { display:flex; justify-content:space-between; font-size:12px; color:#999; margin-top:8px; }
-    .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; overflow-y:auto; }
-    .modal.active { display:flex; align-items:center; justify-content:center; }
-    .modal-content { background:#3a3a3a; border-radius:20px; padding:25px; width:100%; max-width:500px; }
-    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    .modal-title { font-size:22px; font-weight:bold; color:#ff6b00; }
-    .close-btn { font-size:28px; color:#999; cursor:pointer; background:none; border:none; }
-    .form-group { margin-bottom:20px; }
-    .form-label { display:block; font-size:14px; font-weight:600; color:#ff6b00; margin-bottom:8px; }
-    .file-input-wrapper { border:2px dashed #ff6b00; border-radius:12px; padding:30px; text-align:center; cursor:pointer; }
-    .file-input { display:none; }
-    .file-preview { margin-top:15px; border-radius:12px; overflow:hidden; display:none; }
-    .file-preview img, .file-preview video { width:100%; max-height:300px; object-fit:cover; }
-    .form-input, .form-textarea { width:100%; padding:12px; background:rgba(0,0,0,0.3); border:none; border-radius:10px; font-size:14px; color:inherit; font-family:inherit; }
-    .form-textarea { resize:vertical; min-height:100px; }
-    .char-counter { text-align:right; font-size:12px; color:#999; margin-top:5px; }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#1a1a1a; color:#fff; min-height:100vh; padding-bottom:70px;}
+    body.halloween{--color-primary:#ff6b00;--color-secondary:#ff3d00;--bg-card:#3a3a3a;}
+    body.night{--color-primary:#0f0f3f;--color-secondary:#3333aa;--bg-card:#1a1a2a;}
+    body.day{--color-primary:#00aaff;--color-secondary:#00ffaa;--bg-card:#e0f7ff; color:#000;}
+    body.cute{--color-primary:#ff6b9d;--color-secondary:#ffa4c9;--bg-card:#fff0f3; color:#333;}
+    body.cyberpunk{--color-primary:#00ffff;--color-secondary:#ff00ff;--bg-card:#252b48;}
+    body.autumn{--color-primary:#ff9933;--color-secondary:#ffcc66;--bg-card:#3a2a1a;}
+    body::before{content:'🎃';position:fixed;top:10px;right:10px;font-size:30px;animation:float 3s ease-in-out infinite;}
+    body.night::before{content:'🌙';}
+    body.day::before{content:'☀️';}
+    body.cute::before{content:'🌸';}
+    body.cyberpunk::before{content:'🤖';}
+    body.autumn::before{content:'🍁';}
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+    .login-screen,.welcome-screen,.page,.modal{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;z-index:1000;}
+    .hidden{display:none !important;}
+    .login-title,.welcome-title{font-size:28px;font-weight:bold;margin-bottom:20px;}
+    .login-buttons button{margin:5px;padding:12px 20px;font-size:16px;border-radius:10px;border:none;cursor:pointer;}
+    .login-btn{background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);color:#fff;}
+    .welcome-rules{background:var(--bg-card);padding:20px;border-radius:15px;margin-bottom:20px;max-width:400px;}
+    .welcome-rules li{padding-left:20px;position:relative;}
+    .welcome-rules li::before{content:'•';position:absolute;left:0;}
+    .welcome-btn{padding:12px 30px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);color:#fff;cursor:pointer;}
+    .navbar{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:var(--bg-card);padding:10px;}
+    .nav-item{display:flex;flex-direction:column;align-items:center;cursor:pointer;}
+    .nav-item.active{background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);border-radius:10px;}
+    .page{padding:15px;overflow-y:auto;width:100%;display:none;}
+    .page.active{display:block;}
+    .profile-header{background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);padding:30px;border-radius:15px;text-align:center;}
+    .profile-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 10px;border:3px solid white;}
+    .profile-rank{display:inline-block;background:rgba(0,0,0,0.3);padding:5px 10px;border-radius:12px;margin-top:5px;font-size:12px;}
+    .profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px;}
+    .stat-card{background:var(--bg-card);padding:10px;border-radius:12px;text-align:center;}
+    .posts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px;}
+    .post-card{background:var(--bg-card);border-radius:12px;overflow:hidden;position:relative;}
+    .post-card img,.post-card video{width:100%;height:150px;object-fit:cover;}
+    .post-content{padding:10px;}
+    .modal-content{background:var(--bg-card);padding:20px;border-radius:15px;width:100%;max-width:400px;}
+    .close-btn{position:absolute;top:10px;right:10px;font-size:20px;background:none;border:none;color:#999;cursor:pointer;}
+    .form-group{margin-bottom:15px;}
+    .form-label{margin-bottom:5px;display:block;}
+    .form-input,.form-textarea{width:100%;padding:10px;border-radius:8px;border:none;background:rgba(0,0,0,0.2);color:inherit;}
+    .submit-btn{padding:10px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);color:#fff;cursor:pointer;width:100%;}
 </style>
 </head>
 <body class="halloween">
-
 <div class="login-screen" id="loginScreen">
-    <div class="login-logo">🎃</div>
-    <h1 class="login-title">Spark Галерея</h1>
-    <p style="color:#999;text-align:center;margin-bottom:30px;">Войдите через Telegram чтобы продолжить</p>
+    <div class="login-title">Spark Галерея</div>
+    <p>Вход через Telegram</p>
     <div class="login-buttons">
-        <button class="login-btn" onclick="loginWithTelegram()">
-            <span style="font-size:20px;">✈️</span>
-            Войти через Telegram
-        </button>
+        <button class="login-btn" onclick="loginTelegram()">Войти</button>
     </div>
 </div>
 
 <div class="welcome-screen hidden" id="welcomeScreen">
-    <div class="welcome-logo">🎃</div>
-    <h1 class="welcome-title">Добро пожаловать!</h1>
-    <div class="welcome-rules">
-        <h3>📋 Правила сообщества</h3>
-        <ul>
-            <li>Запрещена порнография и откровенный контент</li>
-            <li>Оскорбления и унижения других пользователей запрещены</li>
-            <li>Политические и провокационные посты запрещены</li>
-            <li>Будьте уважительны к другим</li>
-        </ul>
-    </div>
+    <div class="welcome-title">Добро пожаловать!</div>
+    <ul class="welcome-rules">
+        <li>Порнография запрещена</li>
+        <li>Оскорбления и агрессия запрещены</li>
+        <li>Политика запрещена</li>
+        <li>Будьте культурны</li>
+    </ul>
     <button class="welcome-btn" onclick="closeWelcome()">Начать</button>
 </div>
 
 <div class="page active" id="profilePage">
     <div class="profile-header">
         <div class="profile-avatar" id="profileAvatar">?</div>
-        <div style="font-size:24px;font-weight:600;margin-bottom:5px;" id="profileName">Пользователь</div>
-        <div style="opacity:0.9;" id="profileUsername">@username</div>
+        <div id="profileName">Пользователь</div>
+        <div id="profileUsername">@username</div>
         <div class="profile-rank" id="profileRank">🎃 Новичок</div>
     </div>
     <div class="profile-stats">
-        <div class="stat-card"><div class="stat-value" id="postsCount">0</div><div class="stat-label">Постов</div></div>
-        <div class="stat-card"><div class="stat-value" id="likesCount">0</div><div class="stat-label">Лайков</div></div>
-        <div class="stat-card"><div class="stat-value" id="favoritesCount">0</div><div class="stat-label">Избранное</div></div>
+        <div class="stat-card"><div id="postsCount">0</div>Постов</div>
+        <div class="stat-card"><div id="likesCount">0</div>Лайков</div>
+        <div class="stat-card"><div id="favoritesCount">0</div>Избранное</div>
     </div>
 </div>
 
 <div class="page" id="galleryPage">
-    <div class="gallery-controls">
-        <select class="filter-select" id="filterSelect" onchange="renderPosts()">
-            <option value="all">Все</option>
-            <option value="today">Сегодня</option>
-            <option value="week">Неделя</option>
-            <option value="month">Месяц</option>
-            <option value="year">Год</option>
-        </select>
-        <button class="add-post-btn" onclick="openCreateModal()">+</button>
-    </div>
+    <button class="submit-btn" onclick="openCreateModal()">Создать пост</button>
+    <select id="filterSelect" onchange="renderPosts()">
+        <option value="all">Все</option>
+        <option value="today">Сегодня</option>
+        <option value="week">Эта неделя</option>
+        <option value="month">Этот месяц</option>
+        <option value="year">Этот год</option>
+    </select>
     <div class="posts-grid" id="postsGrid"></div>
 </div>
 
-<div class="modal" id="createModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title">Новая публикация</h2>
-            <button class="close-btn" onclick="closeCreateModal()">×</button>
-        </div>
-        <form id="createPostForm" onsubmit="createPost(event)">
-            <div class="form-group">
-                <label class="form-label">Фото или видео</label>
-                <div class="file-input-wrapper" onclick="document.getElementById('fileInput').click()">
-                    📁 Выберите файл
-                    <input type="file" id="fileInput" class="file-input" accept="image/*,video/*" onchange="handleFileSelect(event)">
-                </div>
-                <div class="file-preview" id="filePreview"></div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Название</label>
-                <input type="text" class="form-input" id="postTitle" placeholder="Название поста" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Описание</label>
-                <textarea class="form-textarea" id="description" placeholder="Описание..." required></textarea>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Хэштеги</label>
-                <input type="text" class="form-input" id="hashtags" placeholder="#пример #хэштег">
-            </div>
-            <button type="submit" class="submit-btn">Опубликовать</button>
-        </form>
-    </div>
+<div class="navbar">
+    <div class="nav-item active" onclick="switchPage('profile')">👤 Профиль</div>
+    <div class="nav-item" onclick="switchPage('gallery')">🖼 Галерея</div>
 </div>
 
-<div class="navbar">
-    <div class="nav-item active" onclick="switchPage('profile')">
-        <div class="nav-icon">👤</div>
-        <div class="nav-label">Профиль</div>
-    </div>
-    <div class="nav-item" onclick="switchPage('gallery')">
-        <div class="nav-icon">🖼️</div>
-        <div class="nav-label">Галерея</div>
+<div class="modal hidden" id="createModal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeCreateModal()">×</button>
+        <h3>Создать пост</h3>
+        <form id="createPostForm" onsubmit="createPost(event)">
+            <div class="form-group">
+                <label>Фото/Видео</label>
+                <input type="file" id="fileInput" accept="image/*,video/*" onchange="previewFile(event)">
+                <div id="filePreview"></div>
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <textarea id="description" class="form-textarea"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Хэштеги</label>
+                <input type="text" id="hashtags" class="form-input" placeholder="#пример">
+            </div>
+            <button class="submit-btn" type="submit">Опубликовать</button>
+        </form>
     </div>
 </div>
 
@@ -171,88 +132,85 @@ tg.ready();
 tg.expand();
 
 let posts = [];
-let selectedFile = null;
+let userData = {};
+let adminUsername = "AdminTG"; // Ник админа для фона и управления
+let storageUsed = 0;
 
-// Инициализация
-(function init() {
-    checkLogin();
-    renderPosts();
-})();
-
-function loginWithTelegram() {
+function loginTelegram(){
     const user = tg.initDataUnsafe.user;
-    const userData = user ? {
-        firstName: user.first_name || 'Telegram User',
-        username: user.username || 'tguser' + Date.now()
-    } : { firstName:'Telegram User', username:'tguser'};
-    localStorage.setItem('isLoggedIn','true');
-    localStorage.setItem('userData',JSON.stringify(userData));
+    userData = user ? {firstName:user.first_name, username:user.username} : {firstName:"TelegramUser", username:"tguser"};
     document.getElementById('profileName').textContent = userData.firstName;
-    document.getElementById('profileUsername').textContent = '@' + userData.username;
+    document.getElementById('profileUsername').textContent = '@'+userData.username;
     document.getElementById('profileAvatar').textContent = userData.firstName.charAt(0).toUpperCase();
+    localStorage.setItem('userData', JSON.stringify(userData));
     document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('welcomeScreen').classList.remove('hidden');
+    if(!localStorage.getItem('hasSeenWelcome')) document.getElementById('welcomeScreen').classList.remove('hidden');
 }
 
-function closeWelcome() {
-    localStorage.setItem('hasSeenWelcome','true');
+function closeWelcome(){
+    localStorage.setItem('hasSeenWelcome', 'true');
     document.getElementById('welcomeScreen').classList.add('hidden');
 }
 
-function switchPage(page) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+function switchPage(page){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById(page+'Page').classList.add('active');
-    const idx = {profile:0, gallery:1};
-    document.querySelectorAll('.nav-item')[idx[page]].classList.add('active');
 }
 
-// Посты
-function handleFileSelect(e){
-    selectedFile = e.target.files[0];
+function openCreateModal(){document.getElementById('createModal').classList.remove('hidden');}
+function closeCreateModal(){document.getElementById('createModal').classList.add('hidden');}
+function previewFile(event){
+    const file = event.target.files[0];
     const preview = document.getElementById('filePreview');
-    preview.style.display='block';
-    if(selectedFile.type.startsWith('image/')){
-        preview.innerHTML = `<img src="${URL.createObjectURL(selectedFile)}"/>`;
-    } else {
-        preview.innerHTML = `<video src="${URL.createObjectURL(selectedFile)}" controls></video>`;
-    }
+    preview.innerHTML = "";
+    if(!file) return;
+    const url = URL.createObjectURL(file);
+    if(file.type.startsWith('image')) preview.innerHTML=`<img src="${url}">`;
+    else if(file.type.startsWith('video')) preview.innerHTML=`<video src="${url}" controls></video>`;
 }
 
 function createPost(e){
     e.preventDefault();
-    const title = document.getElementById('postTitle').value;
-    const desc = document.getElementById('description').value;
-    let hashtags = document.getElementById('hashtags').value.split(' ').map(h=>h.startsWith('#')?h:'#'+h);
-    const user = JSON.parse(localStorage.getItem('userData'));
-    const post = {id:Date.now(), user:user.username, title, desc, hashtags, date:new Date(), file:selectedFile ? URL.createObjectURL(selectedFile):null};
+    const description = document.getElementById('description').value;
+    let hashtags = document.getElementById('hashtags').value;
+    hashtags = hashtags.split(' ').map(t=>t.startsWith('#')?t:'#'+t).join(' ');
+    const fileInput = document.getElementById('fileInput');
+    if(!fileInput.files[0]) {alert('Выберите файл'); return;}
+    const post = {id:Date.now(), user:userData.username, firstName:userData.firstName, description, hashtags, file:URL.createObjectURL(fileInput.files[0]), date:new Date()};
     posts.unshift(post);
+    localStorage.setItem('posts', JSON.stringify(posts));
     renderPosts();
-    document.getElementById('createPostForm').reset();
-    document.getElementById('filePreview').style.display='none';
     closeCreateModal();
 }
 
 function renderPosts(){
     const grid = document.getElementById('postsGrid');
-    grid.innerHTML='';
-    if(posts.length===0){ grid.innerHTML='<div style="text-align:center; padding:50px; color:#999;">Пока нет постов</div>'; return;}
-    const filter = document.getElementById('filterSelect').value;
-    let filtered = posts;
-    if(filter!=='all'){
-        const now = new Date();
-        filtered = posts.filter(p=>{
-            const diff = now - new Date(p.date);
-            if(filter==='today') return diff<86400000;
-            if(filter==='week') return diff<7*86400000;
-            if(filter==='month') return diff<30*86400000;
-            if(filter==='year') return diff<365*86400000;
-        });
-    }
-    filtered.forEach(p=>{
-        const postDiv = document.createElement('div'); postDiv.className='post-card';
-        if(p.file){
-            if(p.file.endsWith('.mp4')) postDiv.innerHTML=`<video src="${p.file}" class="post-media" controls></video>`;
-            else postDiv.innerHTML=`<img src="${p.file}" class="post-media"/>`;
+    grid.innerHTML = "";
+    posts.forEach(post=>{
+        const div = document.createElement('div');
+        div.className='post-card';
+        div.innerHTML=`${post.file.endsWith('.mp4')?`<video src="${post.file}" controls></video>`:`<img src="${post.file}">`}
+        <div class="post-content">
+            <strong>${post.firstName}</strong><br>
+            ${post.description}<br>
+            <em>${post.hashtags}</em>
+        </div>`;
+        if(post.user===userData.username || userData.username===adminUsername){
+            const delBtn = document.createElement('button');
+            delBtn.textContent='Удалить';
+            delBtn.onclick=()=>{if(confirm('Вы точно хотите удалить?')){posts=posts.filter(p=>p.id!==post.id);localStorage.setItem('posts',JSON.stringify(posts));renderPosts();}};
+            div.appendChild(delBtn);
         }
-        postDiv.innerHTML+=`<div class="post-content
+        grid.appendChild(div);
+    });
+}
+
+// Загрузка данных
+window.onload=()=>{
+    posts=JSON.parse(localStorage.getItem('posts')||'[]');
+    if(localStorage.getItem('userData')) userData=JSON.parse(localStorage.getItem('userData'));
+    renderPosts();
+};
+</script>
+</body>
+</html>
