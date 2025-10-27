@@ -6,124 +6,134 @@
 <title>Spark Галерея</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#1a1a1a; color:#fff; min-height:100vh; padding-bottom:70px;}
-    body.halloween{--color-primary:#ff6b00;--color-secondary:#ff3d00;--bg-card:#3a3a3a;}
-    body.night{--color-primary:#0f0f3f;--color-secondary:#3333aa;--bg-card:#1a1a2a;}
-    body.day{--color-primary:#00aaff;--color-secondary:#00ffaa;--bg-card:#e0f7ff; color:#000;}
-    body.cute{--color-primary:#ff6b9d;--color-secondary:#ffa4c9;--bg-card:#fff0f3; color:#333;}
-    body.cyberpunk{--color-primary:#00ffff;--color-secondary:#ff00ff;--bg-card:#252b48;}
-    body.autumn{--color-primary:#ff9933;--color-secondary:#ffcc66;--bg-card:#3a2a1a;}
-    body::before{content:'🎃';position:fixed;top:10px;right:10px;font-size:30px;animation:float 3s ease-in-out infinite;}
-    body.night::before{content:'🌙';}
-    body.day::before{content:'☀️';}
-    body.cute::before{content:'🌸';}
-    body.cyberpunk::before{content:'🤖';}
-    body.autumn::before{content:'🍁';}
-    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
-    .login-screen,.welcome-screen,.page,.modal{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;z-index:1000;}
-    .hidden{display:none !important;}
-    .login-title,.welcome-title{font-size:28px;font-weight:bold;margin-bottom:20px;}
-    .login-buttons button{margin:5px;padding:12px 20px;font-size:16px;border-radius:10px;border:none;cursor:pointer;}
-    .login-btn{background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);color:#fff;}
-    .welcome-rules{background:var(--bg-card);padding:20px;border-radius:15px;margin-bottom:20px;max-width:400px;}
-    .welcome-rules li{padding-left:20px;position:relative;}
-    .welcome-rules li::before{content:'•';position:absolute;left:0;}
-    .welcome-btn{padding:12px 30px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);color:#fff;cursor:pointer;}
-    .navbar{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:var(--bg-card);padding:10px;}
-    .nav-item{display:flex;flex-direction:column;align-items:center;cursor:pointer;}
-    .nav-item.active{background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);border-radius:10px;}
-    .page{padding:15px;overflow-y:auto;width:100%;display:none;}
-    .page.active{display:block;}
-    .profile-header{background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);padding:30px;border-radius:15px;text-align:center;}
-    .profile-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 10px;border:3px solid white;}
-    .profile-rank{display:inline-block;background:rgba(0,0,0,0.3);padding:5px 10px;border-radius:12px;margin-top:5px;font-size:12px;}
-    .profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px;}
-    .stat-card{background:var(--bg-card);padding:10px;border-radius:12px;text-align:center;}
-    .posts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px;}
-    .post-card{background:var(--bg-card);border-radius:12px;overflow:hidden;position:relative;}
-    .post-card img,.post-card video{width:100%;height:150px;object-fit:cover;}
-    .post-content{padding:10px;}
-    .modal-content{background:var(--bg-card);padding:20px;border-radius:15px;width:100%;max-width:400px;}
-    .close-btn{position:absolute;top:10px;right:10px;font-size:20px;background:none;border:none;color:#999;cursor:pointer;}
-    .form-group{margin-bottom:15px;}
-    .form-label{margin-bottom:5px;display:block;}
-    .form-input,.form-textarea{width:100%;padding:10px;border-radius:8px;border:none;background:rgba(0,0,0,0.2);color:inherit;}
-    .submit-btn{padding:10px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);color:#fff;cursor:pointer;width:100%;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+  body{min-height:100vh;background:#1a1a1a;color:#fff;padding-bottom:70px;display:flex;flex-direction:column;}
+  body.halloween{--primary:#ff6b00;--secondary:#ff3d00;--bg:#3a3a3a;}
+  body.night{background:#0b0b23;--primary:#00ffff;--secondary:#ff00ff;--bg:#252b48;}
+  body.day{background:#fef6f7;color:#333;--primary:#ff6b9d;--secondary:#ffa4c9;--bg:#fff0f3;}
+  body.cute{background:#ffe4f0;color:#333;--primary:#ff6bb0;--secondary:#ffa4c9;--bg:#fff0f3;}
+  body.cyberpunk{background:#0a0e27;--primary:#00ffff;--secondary:#ff00ff;--bg:#252b48;}
+  body.autumn{background:#ffecd1;color:#333;--primary:#ff6b00;--secondary:#d35400;--bg:#fff0e0;}
+  .welcome-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:inherit;z-index:4000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;}
+  .welcome-screen.hidden{display:none;}
+  .welcome-logo{font-size:60px;margin-bottom:15px;}
+  .welcome-title{font-size:28px;font-weight:bold;color:var(--primary);margin-bottom:15px;text-align:center;}
+  .welcome-rules{background:var(--bg);padding:20px;border-radius:12px;margin-bottom:20px;max-width:400px;}
+  .welcome-rules h3{color:var(--primary);margin-bottom:10px;}
+  .welcome-rules li{padding-left:20px;position:relative;margin-bottom:5px;list-style:none;}
+  .welcome-rules li::before{content:"•";position:absolute;left:0;color:var(--primary);}
+  .welcome-btn{padding:12px 25px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;font-size:16px;}
+  .profile-header{background:linear-gradient(135deg,var(--primary),var(--secondary));padding:30px 20px;border-radius:15px;text-align:center;color:#fff;margin-bottom:15px;}
+  .profile-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.3);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:36px;border:3px solid #fff;}
+  .profile-name{font-size:20px;font-weight:600;}
+  .profile-username{opacity:0.8;margin-bottom:5px;}
+  .profile-title{display:inline-block;background:rgba(0,0,0,0.3);padding:4px 10px;border-radius:12px;font-size:12px;}
+  .navbar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);display:flex;justify-content:space-around;padding:8px 0;z-index:1000;}
+  .nav-item{display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:6px 15px;border-radius:10px;}
+  .nav-item.active{background:linear-gradient(135deg,var(--primary),var(--secondary));}
+  .nav-icon{font-size:20px;}
+  .nav-label{font-size:12px;color:#999;}
+  .nav-item.active .nav-label{color:#fff;}
+  .page{display:none;padding:15px;flex:1;overflow-y:auto;}
+  .page.active{display:block;}
+  .posts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .post-card{background:var(--bg);border-radius:12px;overflow:hidden;position:relative;}
+  .post-media{width:100%;height:150px;object-fit:cover;}
+  .post-content{padding:8px;}
+  .post-description{font-size:14px;margin-bottom:4px;}
+  .post-meta{display:flex;justify-content:space-between;font-size:12px;color:#999;margin-top:5px;}
+  .post-actions{position:absolute;top:5px;right:5px;display:flex;gap:5px;}
+  .post-btn{width:25px;height:25px;border-radius:50%;border:none;background:rgba(0,0,0,0.6);color:#fff;cursor:pointer;font-size:14px;}
+  .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:2000;padding:20px;overflow-y:auto;align-items:center;justify-content:center;}
+  .modal.active{display:flex;}
+  .modal-content{background:var(--bg);border-radius:15px;padding:20px;width:100%;max-width:500px;}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .close-btn{font-size:24px;color:#999;cursor:pointer;border:none;background:none;}
+  .form-group{margin-bottom:15px;}
+  .form-label{display:block;font-size:14px;font-weight:600;color:var(--primary);margin-bottom:5px;}
+  .form-input,.form-textarea{width:100%;padding:8px;border:none;border-radius:8px;background:rgba(0,0,0,0.3);color:inherit;font-family:inherit;}
+  .form-textarea{resize:vertical;min-height:80px;}
+  .submit-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;}
+  .filter-select{padding:8px;border-radius:8px;border:none;background:var(--bg);color:inherit;margin-bottom:10px;width:100%;}
 </style>
 </head>
 <body class="halloween">
-<div class="login-screen" id="loginScreen">
-    <div class="login-title">Spark Галерея</div>
-    <p>Вход через Telegram</p>
-    <div class="login-buttons">
-        <button class="login-btn" onclick="loginTelegram()">Войти</button>
-    </div>
-</div>
 
-<div class="welcome-screen hidden" id="welcomeScreen">
-    <div class="welcome-title">Добро пожаловать!</div>
-    <ul class="welcome-rules">
-        <li>Порнография запрещена</li>
-        <li>Оскорбления и агрессия запрещены</li>
-        <li>Политика запрещена</li>
-        <li>Будьте культурны</li>
-    </ul>
-    <button class="welcome-btn" onclick="closeWelcome()">Начать</button>
+<div class="welcome-screen" id="welcomeScreen">
+  <div class="welcome-logo">🎃</div>
+  <div class="welcome-title">Добро пожаловать в Spark Галерею!</div>
+  <ul class="welcome-rules">
+    <li>Запрещено публиковать 18+ контент</li>
+    <li>Оскорбления и пропаганда политики запрещены</li>
+    <li>Будьте уважительны к другим</li>
+    <li>Спам не допускается</li>
+  </ul>
+  <button class="welcome-btn" onclick="closeWelcome()">Начать</button>
 </div>
 
 <div class="page active" id="profilePage">
-    <div class="profile-header">
-        <div class="profile-avatar" id="profileAvatar">?</div>
-        <div id="profileName">Пользователь</div>
-        <div id="profileUsername">@username</div>
-        <div class="profile-rank" id="profileRank">🎃 Новичок</div>
-    </div>
-    <div class="profile-stats">
-        <div class="stat-card"><div id="postsCount">0</div>Постов</div>
-        <div class="stat-card"><div id="likesCount">0</div>Лайков</div>
-        <div class="stat-card"><div id="favoritesCount">0</div>Избранное</div>
-    </div>
+  <div class="profile-header">
+    <div class="profile-avatar" id="profileAvatar">?</div>
+    <div class="profile-name" id="profileName">Пользователь</div>
+    <div class="profile-username" id="profileUsername">@username</div>
+    <div class="profile-title" id="profileTitle">Нейрохудожник</div>
+  </div>
 </div>
 
 <div class="page" id="galleryPage">
-    <button class="submit-btn" onclick="openCreateModal()">Создать пост</button>
-    <select id="filterSelect" onchange="renderPosts()">
-        <option value="all">Все</option>
-        <option value="today">Сегодня</option>
-        <option value="week">Эта неделя</option>
-        <option value="month">Этот месяц</option>
-        <option value="year">Этот год</option>
-    </select>
-    <div class="posts-grid" id="postsGrid"></div>
+  <select class="filter-select" id="dateFilter" onchange="renderPosts()">
+    <option value="all">Все</option>
+    <option value="day">Сегодня</option>
+    <option value="week">Эта неделя</option>
+    <option value="month">Этот месяц</option>
+    <option value="year">Этот год</option>
+  </select>
+  <button class="submit-btn" onclick="openCreateModal()">Создать пост</button>
+  <div class="posts-grid" id="postsGrid"></div>
+</div>
+
+<div class="page" id="settingsPage">
+  <div style="margin-bottom:15px;">
+    <h3 style="color:var(--primary);margin-bottom:8px;">Темы</h3>
+    <button onclick="changeTheme('halloween')">🎃 Хэллоуин</button>
+    <button onclick="changeTheme('night')">🌙 Ночная</button>
+    <button onclick="changeTheme('day')">☀️ Дневная</button>
+    <button onclick="changeTheme('cute')">🌸 Няшная</button>
+    <button onclick="changeTheme('cyberpunk')">🤖 Киберпанк</button>
+    <button onclick="changeTheme('autumn')">🍂 Осенняя</button>
+  </div>
+</div>
+
+<div class="modal" id="createModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>Создать пост</div>
+      <button class="close-btn" onclick="closeCreateModal()">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Фото/Видео</label>
+      <input type="file" id="postFile">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Имя</label>
+      <input type="text" id="postName" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Описание</label>
+      <textarea id="postDesc" class="form-textarea"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Хэштеги</label>
+      <input type="text" id="postTags" class="form-input" placeholder="#тег">
+    </div>
+    <button class="submit-btn" onclick="createPost()">Опубликовать</button>
+  </div>
 </div>
 
 <div class="navbar">
-    <div class="nav-item active" onclick="switchPage('profile')">👤 Профиль</div>
-    <div class="nav-item" onclick="switchPage('gallery')">🖼 Галерея</div>
-</div>
-
-<div class="modal hidden" id="createModal">
-    <div class="modal-content">
-        <button class="close-btn" onclick="closeCreateModal()">×</button>
-        <h3>Создать пост</h3>
-        <form id="createPostForm" onsubmit="createPost(event)">
-            <div class="form-group">
-                <label>Фото/Видео</label>
-                <input type="file" id="fileInput" accept="image/*,video/*" onchange="previewFile(event)">
-                <div id="filePreview"></div>
-            </div>
-            <div class="form-group">
-                <label>Описание</label>
-                <textarea id="description" class="form-textarea"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Хэштеги</label>
-                <input type="text" id="hashtags" class="form-input" placeholder="#пример">
-            </div>
-            <button class="submit-btn" type="submit">Опубликовать</button>
-        </form>
-    </div>
+  <div class="nav-item active" onclick="switchPage('profile')"><div class="nav-icon">👤</div><div class="nav-label">Профиль</div></div>
+  <div class="nav-item" onclick="switchPage('gallery')"><div class="nav-icon">🖼️</div><div class="nav-label">Галерея</div></div>
+  <div class="nav-item" onclick="switchPage('settings')"><div class="nav-icon">⚙️</div><div class="nav-label">Настройки</div></div>
 </div>
 
 <script>
@@ -132,85 +142,93 @@ tg.ready();
 tg.expand();
 
 let posts = [];
-let userData = {};
-let adminUsername = "AdminTG"; // Ник админа для фона и управления
-let storageUsed = 0;
+let admin = 'твой_ник'; // ник админа
+let isAdmin = false;
 
-function loginTelegram(){
-    const user = tg.initDataUnsafe.user;
-    userData = user ? {firstName:user.first_name, username:user.username} : {firstName:"TelegramUser", username:"tguser"};
-    document.getElementById('profileName').textContent = userData.firstName;
-    document.getElementById('profileUsername').textContent = '@'+userData.username;
-    document.getElementById('profileAvatar').textContent = userData.firstName.charAt(0).toUpperCase();
-    localStorage.setItem('userData', JSON.stringify(userData));
-    document.getElementById('loginScreen').classList.add('hidden');
-    if(!localStorage.getItem('hasSeenWelcome')) document.getElementById('welcomeScreen').classList.remove('hidden');
+function checkLogin(){
+  const user = tg.initDataUnsafe.user;
+  if(user){
+    document.getElementById('profileName').textContent = user.first_name || 'Telegram User';
+    document.getElementById('profileUsername').textContent = '@'+(user.username || 'tguser');
+    document.getElementById('profileAvatar').textContent = (user.first_name||'?').charAt(0).toUpperCase();
+    if(user.username===admin) isAdmin=true;
+  }
 }
 
+checkLogin();
+
 function closeWelcome(){
-    localStorage.setItem('hasSeenWelcome', 'true');
-    document.getElementById('welcomeScreen').classList.add('hidden');
+  document.getElementById('welcomeScreen').classList.add('hidden');
 }
 
 function switchPage(page){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById(page+'Page').classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(page+'Page').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const idx={'profile':0,'gallery':1,'settings':2};
+  document.querySelectorAll('.nav-item')[idx[page]].classList.add('active');
 }
 
-function openCreateModal(){document.getElementById('createModal').classList.remove('hidden');}
-function closeCreateModal(){document.getElementById('createModal').classList.add('hidden');}
-function previewFile(event){
-    const file = event.target.files[0];
-    const preview = document.getElementById('filePreview');
-    preview.innerHTML = "";
-    if(!file) return;
-    const url = URL.createObjectURL(file);
-    if(file.type.startsWith('image')) preview.innerHTML=`<img src="${url}">`;
-    else if(file.type.startsWith('video')) preview.innerHTML=`<video src="${url}" controls></video>`;
+function changeTheme(theme){
+  document.body.className=theme;
 }
 
-function createPost(e){
-    e.preventDefault();
-    const description = document.getElementById('description').value;
-    let hashtags = document.getElementById('hashtags').value;
-    hashtags = hashtags.split(' ').map(t=>t.startsWith('#')?t:'#'+t).join(' ');
-    const fileInput = document.getElementById('fileInput');
-    if(!fileInput.files[0]) {alert('Выберите файл'); return;}
-    const post = {id:Date.now(), user:userData.username, firstName:userData.firstName, description, hashtags, file:URL.createObjectURL(fileInput.files[0]), date:new Date()};
-    posts.unshift(post);
-    localStorage.setItem('posts', JSON.stringify(posts));
+function openCreateModal(){document.getElementById('createModal').classList.add('active');}
+function closeCreateModal(){document.getElementById('createModal').classList.remove('active');}
+
+function createPost(){
+  const fileInput=document.getElementById('postFile');
+  const name=document.getElementById('postName').value||'Без имени';
+  const desc=document.getElementById('postDesc').value||'';
+  let tags=document.getElementById('postTags').value.split(' ').map(t=>t.startsWith('#')?t:'#'+t).join(' ');
+  const reader=new FileReader();
+  if(fileInput.files[0]){
+    reader.onload=function(e){
+      posts.unshift({file:e.target.result,name,desc,tags,date:new Date(),author:tg.initDataUnsafe.user.username||'tguser'});
+      renderPosts();
+      closeCreateModal();
+    };
+    reader.readAsDataURL(fileInput.files[0]);
+  }else{
+    posts.unshift({file:null,name,desc,tags,date:new Date(),author:tg.initDataUnsafe.user.username||'tguser'});
     renderPosts();
     closeCreateModal();
+  }
 }
 
 function renderPosts(){
-    const grid = document.getElementById('postsGrid');
-    grid.innerHTML = "";
-    posts.forEach(post=>{
-        const div = document.createElement('div');
-        div.className='post-card';
-        div.innerHTML=`${post.file.endsWith('.mp4')?`<video src="${post.file}" controls></video>`:`<img src="${post.file}">`}
-        <div class="post-content">
-            <strong>${post.firstName}</strong><br>
-            ${post.description}<br>
-            <em>${post.hashtags}</em>
-        </div>`;
-        if(post.user===userData.username || userData.username===adminUsername){
-            const delBtn = document.createElement('button');
-            delBtn.textContent='Удалить';
-            delBtn.onclick=()=>{if(confirm('Вы точно хотите удалить?')){posts=posts.filter(p=>p.id!==post.id);localStorage.setItem('posts',JSON.stringify(posts));renderPosts();}};
-            div.appendChild(delBtn);
-        }
-        grid.appendChild(div);
+  const grid=document.getElementById('postsGrid');
+  grid.innerHTML='';
+  const filter=document.getElementById('dateFilter').value;
+  let filtered=posts;
+  const now=new Date();
+  if(filter!=='all'){
+    filtered=posts.filter(p=>{
+      const d=new Date(p.date);
+      if(filter==='day') return d.toDateString()===now.toDateString();
+      if(filter==='week'){const diff=(now-d)/1000/60/60/24; return diff<=7;}
+      if(filter==='month'){return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}
+      if(filter==='year'){return d.getFullYear()===now.getFullYear();}
     });
+  }
+  filtered.forEach((p,i)=>{
+    const div=document.createElement('div');div.className='post-card';
+    if(p.file){
+      const media=p.file.endsWith('mp4')?document.createElement('video'):document.createElement('img');
+      media.src=p.file;media.className='post-media';
+      if(media.tagName==='VIDEO'){media.controls=true;}
+      div.appendChild(media);
+    }
+    const content=document.createElement('div');content.className='post-content';
+    content.innerHTML=`<b>${p.name}</b><div class="post-description">${p.desc}</div><div>${p.tags}</div><div class="post-meta">${p.author} - ${new Date(p.date).toLocaleString()}</div>`;
+    div.appendChild(content);
+    if(isAdmin || p.author===tg.initDataUnsafe.user.username){
+      const del=document.createElement('button');del.className='post-btn';del.innerText='🗑';del.onclick=()=>{if(confirm('Вы уверены?')){posts.splice(posts.indexOf(p),1);renderPosts();}};
+      div.appendChild(del);
+    }
+    grid.appendChild(div);
+  });
 }
-
-// Загрузка данных
-window.onload=()=>{
-    posts=JSON.parse(localStorage.getItem('posts')||'[]');
-    if(localStorage.getItem('userData')) userData=JSON.parse(localStorage.getItem('userData'));
-    renderPosts();
-};
 </script>
 </body>
 </html>
