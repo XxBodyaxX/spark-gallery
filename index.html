@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spark Галерея</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#1a1a1a; color:#fff; min-height:100vh; padding-bottom:70px;}
+  /* Темы */
+  body.halloween{background:#1a1a1a; --color-primary:#ff6b00; --color-secondary:#ff3d00; --bg-card:#3a3a3a;}
+  body.night{background:#0a0a1f; --color-primary:#8b00ff; --color-secondary:#4500ff; --bg-card:#1a1a36;}
+  body.day{background:#fefefe; color:#333; --color-primary:#00aaff; --color-secondary:#00ffaa; --bg-card:#f0f0f0;}
+  body.kawaii{background:#fff0f5; color:#333; --color-primary:#ff69b4; --color-secondary:#ffb6c1; --bg-card:#fff0f3;}
+  body.cyberpunk{background:#0a0e27; --color-primary:#00ffff; --color-secondary:#ff00ff; --bg-card:#252b48;}
+  body.autumn{background:#fff5e6; color:#333; --color-primary:#ff6600; --color-secondary:#cc3300; --bg-card:#ffe6cc;}
+  body::before{content:'🎃';position:fixed;top:10px;right:10px;font-size:30px;z-index:1;animation:float 3s ease-in-out infinite;}
+  body.night::before{content:'🌙';} body.day::before{content:'☀️';} body.kawaii::before{content:'🌸';} body.cyberpunk::before{content:'🤖';} body.autumn::before{content:'🍁';}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+  /* Login & Welcome */
+  .login-screen,.welcome-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;z-index:4000;}
+  .login-screen.hidden,.welcome-screen.hidden{display:none !important;}
+  .login-logo,.welcome-logo{font-size:80px;margin-bottom:20px;}
+  .login-title,.welcome-title{font-size:32px;font-weight:bold;color:var(--color-primary);margin-bottom:20px;}
+  .login-buttons{display:flex;flex-direction:column;gap:15px;width:100%;max-width:350px;}
+  .login-btn{padding:18px 30px;background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
+  .welcome-rules{background:var(--bg-card);padding:25px;border-radius:15px;margin:20px 0;max-width:400px;}
+  .welcome-rules h3{color:var(--color-primary);margin-bottom:15px;}
+  .welcome-rules ul{list-style:none;padding:0;}
+  .welcome-rules li{padding:8px 0;padding-left:25px;position:relative;}
+  .welcome-rules li::before{content:'📌';position:absolute;left:0;}
+  .welcome-btn{padding:16px 40px;background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);color:white;border:none;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;margin-top:20px;}
+  /* Navbar & Pages */
+  .navbar{position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);display:flex;justify-content:space-around;padding:12px 0;z-index:1000;}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 20px;border-radius:12px;}
+  .nav-item.active{background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);}
+  .nav-icon{font-size:24px;}
+  .nav-label{font-size:12px;color:#999;}
+  .nav-item.active .nav-label{color:white;}
+  .page{display:none;padding:20px;}
+  .page.active{display:block;}
+  /* Profile */
+  .profile-header{background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);padding:40px 20px 30px;border-radius:20px;text-align:center;color:white;margin-bottom:20px;}
+  .profile-avatar{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:48px;margin:0 auto 15px;border:4px solid white;}
+  .profile-rank{display:inline-block;background:rgba(0,0,0,0.3);padding:6px 15px;border-radius:20px;font-size:14px;margin-top:10px;}
+  .profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;}
+  .stat-card{background:var(--bg-card);padding:20px;border-radius:15px;text-align:center;}
+  .stat-value{font-size:24px;font-weight:bold;color:var(--color-primary);margin-bottom:5px;}
+  .stat-label{color:#999;font-size:14px;}
+  /* Posts Grid */
+  .gallery-controls{display:flex;gap:10px;margin-bottom:20px;}
+  .filter-select{flex:1;padding:12px;background:var(--bg-card);border:none;border-radius:10px;color:inherit;font-size:14px;}
+  .add-post-btn{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);color:white;border:none;font-size:28px;cursor:pointer;}
+  .posts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;}
+  .post-card{background:var(--bg-card);border-radius:15px;overflow:hidden;position:relative;}
+  .post-media{width:100%;height:200px;object-fit:cover;}
+  .post-content{padding:12px;}
+  .empty-state{text-align:center;padding:60px 20px;color:#666;grid-column:1/-1;}
+  .empty-state-icon{font-size:64px;margin-bottom:15px;}
+</style>
+</head>
+<body class="halloween">
+  <div class="login-screen" id="loginScreen">
+    <div class="login-logo">🎃</div>
+    <h1 class="login-title">Spark Галерея</h1>
+    <p style="color:#999;text-align:center;margin-bottom:30px;">Вход через Telegram</p>
+    <div class="login-buttons">
+      <button class="login-btn" onclick="loginWithTelegram()">
+        <span style="font-size:20px;">✈️</span> Войти через Telegram
+      </button>
+    </div>
+  </div>
+
+  <div class="welcome-screen hidden" id="welcomeScreen">
+    <div class="welcome-logo">🎃</div>
+    <h1 class="welcome-title">Добро пожаловать!</h1>
+    <div class="welcome-rules">
+      <h3>📋 Правила сообщества</h3>
+      <ul>
+        <li>Публикации 18+ запрещены.</li>
+        <li>Будьте вежливы и уважительны к другим участникам.</li>
+        <li>Оскорбления, спам и провокации не допускаются.</li>
+        <li>Политические дискуссии не приветствуются.</li>
+        <li>Нарушения правил могут привести к ограничению доступа.</li>
+      </ul>
+    </div>
+    <button class="welcome-btn" onclick="closeWelcome()">Начать</button>
+  </div>
+
+  <!-- Profile Page -->
+  <div class="page active" id="profilePage">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">?</div>
+      <div style="font-size:24px;font-weight:600;margin-bottom:5px;" id="profileName">Пользователь</div>
+      <div style="opacity:0.9;" id="profileUsername">@username</div>
+      <div class="profile-rank">🎃 Новичок</div>
+    </div>
+    <div class="profile-stats">
+      <div class="stat-card"><div class="stat-value" id="postsCount">0</div><div class="stat-label">Постов</div></div>
+      <div class="stat-card"><div class="stat-value" id="likesCount">0</div><div class="stat-label">Лайков</div></div>
+      <div class="stat-card"><div class="stat-value" id="favoritesCount">0</div><div class="stat-label">Избранное</div></div>
+    </div>
+  </div>
+
+  <!-- Gallery Page -->
+  <div class="page" id="galleryPage">
+    <div class="gallery-controls">
+      <select class="filter-select">
+        <option value="all">Все посты</option>
+      </select>
+      <button class="add-post-btn">+</button>
+    </div>
+    <div class="posts-grid" id="postsGrid">
+      <div class="empty-state">
+        <div class="empty-state-icon">🎃</div>
+        <div class="empty-state-text">Пока нет публикаций<br>Создайте первый пост!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="nav-item active" onclick="switchPage('profile')"><div class="nav-icon">👤</div><div class="nav-label">Профиль</div></div>
+    <div class="nav-item" onclick="switchPage('gallery')"><div class="nav-icon">🖼️</div><div class="nav-label">Галерея</div></div>
+  </div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+function loginWithTelegram(){
+  const user = tg.initDataUnsafe.user;
+  const userData = user?{
+    firstName:user.first_name||"Telegram User",
+    username:user.username||("tguser"+Date.now())
+  }:{firstName:"Telegram User",username:"tguser"};
+  completeLogin(userData);
+}
+
+function completeLogin(userData){
+  localStorage.setItem('isLoggedIn','true');
+  localStorage.setItem('userData',JSON.stringify(userData));
+  document.getElementById('profileName').textContent=userData.firstName;
+  document.getElementById('profileUsername').textContent='@'+userData.username;
+  document.getElementById('profileAvatar').textContent=userData.firstName.charAt(0).toUpperCase();
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('welcomeScreen').classList.remove('hidden');
+}
+
+function closeWelcome(){
+  localStorage.setItem('hasSeenWelcome','true');
+  document.getElementById('welcomeScreen').classList.add('hidden');
+}
+
+function switchPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const idx={profile:0,gallery:1};
+  document.getElementById(page+'Page').classList.add('active');
+  document.querySelectorAll('.nav-item')[idx[page]].classList.add('active');
+}
+</script>
+</body>
+</html>
