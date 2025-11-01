@@ -1,6 +1,34 @@
-body { background: #0f0f0f; color: white; font-family: 'Inter', sans-serif; }
-.active-tab { color: #ff9800; border-top: 2px solid #ff9800; }
-.card { background: rgba(255,255,255,0.08); border-radius: 1rem; backdrop-filter: blur(10px); transition: all 0.2s ease; }
-.card:hover { background: rgba(255,255,255,0.15); }
-.like-btn { cursor: pointer; color: #f87171; }
-.favorite-btn { cursor: pointer; color: #facc15; }
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Карточки */
+.card {
+  background: rgba(255,255,255,0.08);
+  border-radius: 1rem;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+  transition: 0.25s ease;
+}
+.card:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+/* Вкладки */
+.tab-section.hidden {
+  display: none;
+}
+
+.tab-btn {
+  opacity: 0.5;
+  font-size: 1.6rem;
+  transition: 0.2s ease;
+}
+.tab-btn:hover {
+  opacity: 0.8;
+}
+
+.active-tab {
+  opacity: 1 !important;
+  border-top: 3px solid #ff9800;
+}
