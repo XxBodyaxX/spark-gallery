@@ -4,97 +4,50 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spark Gallery</title>
+
+<!-- Telegram API -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Custom CSS -->
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="flex flex-col min-h-screen">
 
-<!-- Главное меню -->
-<section id="main-menu" class="flex-1 p-6 text-center hidden">
-<h1 class="text-3xl font-bold mb-4">✨ Spark Gallery</h1>
-<p class="mb-2">Добро пожаловать в творческое пространство!</p>
-<div class="text-left mx-auto max-w-md mt-6 space-y-2 text-sm text-gray-300">
-<h2 class="text-lg font-semibold text-orange-400">📜 Правила:</h2>
-<ul class="list-disc list-inside">
-<li>🚫 Без наготы, политики и оскорблений.</li>
-<li>💬 Уважай других участников.</li>
-<li>🎨 Разрешены нейроарты, мемы и креатив!</li>
-</ul>
-</div>
-<button onclick="showTab('gallery')" class="mt-6 bg-orange-500 px-6 py-2 rounded-xl font-semibold hover:bg-orange-600">Войти</button>
-</section>
+<body class="bg-black text-white flex flex-col min-h-screen">
 
-<!-- Галерея -->
-<section id="gallery" class="flex-1 p-4 hidden">
-<h2 class="text-xl font-semibold mb-3">Галерея</h2>
-<div class="flex gap-2 mb-4">
-<button onclick="filterPosts('day')" class="bg-gray-800 px-3 py-1 rounded">День</button>
-<button onclick="filterPosts('week')" class="bg-gray-800 px-3 py-1 rounded">Неделя</button>
-<button onclick="filterPosts('month')" class="bg-gray-800 px-3 py-1 rounded">Месяц</button>
-<button onclick="filterPosts('year')" class="bg-gray-800 px-3 py-1 rounded">Год</button>
-</div>
-<div id="posts" class="grid grid-cols-2 gap-3"></div>
-</section>
+<!-- Контент -->
+<main class="flex-1 p-4">
 
-<!-- Избранное -->
-<section id="favorites" class="flex-1 p-4 hidden">
-<h2 class="text-xl font-semibold mb-3">Избранное</h2>
-<div id="favoritePosts" class="grid grid-cols-2 gap-3"></div>
-</section>
+    <!-- Галерея -->
+    <section id="gallery-section" class="tab-section">
+        <h1 class="text-xl font-bold mb-4">Галерея</h1>
+        <div id="gallery-list" class="grid gap-4"></div>
+    </section>
 
-<!-- Создать -->
-<section id="create" class="flex-1 p-4 hidden">
-<h2 class="text-xl font-semibold mb-3">Создать пост</h2>
-<form id="createForm" class="space-y-3">
-<input type="text" placeholder="Название" class="w-full p-2 rounded-lg text-black" required>
-<textarea placeholder="Описание..." class="w-full p-2 rounded-lg text-black" rows="3"></textarea>
-<input type="file" accept="image/*,video/*" class="w-full text-sm" required>
-<input type="text" placeholder="#теги через пробел" class="w-full p-2 rounded-lg text-black">
-<button type="submit" class="bg-orange-500 px-4 py-2 rounded-lg w-full font-semibold hover:bg-orange-600">Опубликовать</button>
-</form>
-</section>
+    <!-- Избранное -->
+    <section id="favorites-section" class="tab-section hidden">
+        <h1 class="text-xl font-bold mb-4">Избранное</h1>
+        <div id="favorites-list" class="grid gap-4"></div>
+    </section>
 
-<!-- Профиль -->
-<section id="profile" class="flex-1 p-4 hidden">
-<h2 class="text-xl font-semibold mb-3">Профиль</h2>
-<div id="user-info" class="card p-4 flex items-center gap-3">
-<img id="user-avatar" src="" alt="avatar" class="w-16 h-16 rounded-full">
-<div>
-<p id="user-name" class="text-lg font-bold"></p>
-<p class="text-sm text-gray-400" id="user-username"></p>
-</div>
-</div>
-<div class="mt-4 card p-3">
-<p>Уровень: <span class="font-semibold" id="user-level">0</span></p>
-<p>Титул: <span class="font-semibold text-orange-400" id="user-title">Новый участник</span></p>
-<p class="mt-2 text-sm text-gray-400">Опыт: <span id="user-xp">0</span> / 1000 XP</p>
-<p>Хранилище: <span id="user-storage">0</span> / <span id="user-storage-limit">500</span> MB</p>
-</div>
-</section>
+    <!-- Профиль -->
+    <section id="profile-section" class="tab-section hidden">
+        <h1 class="text-xl font-bold mb-4">Профиль</h1>
+        <p>Данные пользователя Telegram будут здесь</p>
+    </section>
 
-<!-- Настройки -->
-<section id="settings" class="flex-1 p-4 hidden">
-<h2 class="text-xl font-semibold mb-3">Настройки</h2>
-<div class="space-y-3" id="admin-settings" style="display:none;">
-<p class="font-semibold text-orange-400">⚡ Админ функции</p>
-<button onclick="adminSetTheme('autumn')" class="bg-gray-800 px-3 py-1 rounded">🍁 Осень</button>
-<button onclick="adminSetTheme('winter')" class="bg-gray-800 px-3 py-1 rounded">❄️ Зима</button>
-<button onclick="adminSetTheme('cyberpunk')" class="bg-gray-800 px-3 py-1 rounded">🌃 Киберпанк</button>
-<button onclick="adminSetTheme('halloween')" class="bg-gray-800 px-3 py-1 rounded">🎃 Хэллоуин</button>
-<input type="file" accept="audio/*" onchange="adminSetMusic(event)">
-</div>
-</section>
+</main>
 
-<!-- Нижнее меню -->
-<nav class="flex justify-around bg-black/70 text-gray-400 text-sm py-3 border-t border-gray-700">
-<button id="tab-gallery" onclick="showTab('gallery')" class="flex flex-col items-center">🖼️<span>Галерея</span></button>
-<button id="tab-favorites" onclick="showTab('favorites')" class="flex flex-col items-center">⭐<span>Избранное</span></button>
-<button id="tab-create" onclick="showTab('create')" class="flex flex-col items-center">➕<span>Создать</span></button>
-<button id="tab-profile" onclick="showTab('profile')" class="flex flex-col items-center">👤<span>Профиль</span></button>
-<button id="tab-settings" onclick="showTab('settings')" class="flex flex-col items-center">⚙️<span>Настройки</span></button>
+<!-- Навигация -->
+<nav class="bg-neutral-900 p-3 flex justify-around border-t border-neutral-700">
+    <button onclick="showTab('gallery')" id="tab-gallery" class="tab-btn active-tab">🏠</button>
+    <button onclick="showTab('favorites')" id="tab-favorites" class="tab-btn">⭐</button>
+    <button onclick="showTab('profile')" id="tab-profile" class="tab-btn">👤</button>
 </nav>
 
+<!-- JS -->
 <script src="app.js"></script>
 </body>
 </html>
