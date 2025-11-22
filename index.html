@@ -1,53 +1,201 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spark Gallery</title>
-
-<!-- Telegram API -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<!-- Tailwind -->
-<script src="https://cdn.tailwindcss.com"></script>
-
-<!-- Custom CSS -->
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Галерея Pro - Зима 2025</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
+<body>
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
 
-<body class="bg-black text-white flex flex-col min-h-screen">
+    <div id="currentTime" style="padding-top: 10px; text-align: center; color: var(--text-secondary);"></div>
 
-<!-- Контент -->
-<main class="flex-1 p-4">
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-logo">❄️</div>
+        <h1 class="welcome-title">Галерея Pro</h1>
+        <p style="color: var(--text-secondary); text-align: center; margin-bottom: 20px;">
+            Зимове видання 2025
+        </p>
+        
+        <div class="welcome-rules">
+            <h3>📋 Правила спільноти</h3>
+            <ul>
+                <li>Заборонена публікація контенту 18+</li>
+                <li>Купальники дозволені з цензурою</li>
+                <li>Будьте поважні до інших</li>
+                <li>2 порушення = бан акаунту</li>
+                <li>За спам - попередження</li>
+            </ul>
+        </div>
 
-    <!-- Галерея -->
-    <section id="gallery-section" class="tab-section">
-        <h1 class="text-xl font-bold mb-4">Галерея</h1>
-        <div id="gallery-list" class="grid gap-4"></div>
-    </section>
+        <button class="welcome-btn" onclick="closeWelcome()">Почати</button>
+    </div>
 
-    <!-- Избранное -->
-    <section id="favorites-section" class="tab-section hidden">
-        <h1 class="text-xl font-bold mb-4">Избранное</h1>
-        <div id="favorites-list" class="grid gap-4"></div>
-    </section>
+    <div class="page active" id="profilePage">
+        <div class="storage-bar">
+            <div class="storage-info">
+                <span>Сховище</span>
+                <span id="storageText">0 МБ / 500 МБ</span>
+            </div>
+            <div class="storage-progress">
+                <div class="storage-fill" id="storageFill" style="width: 0%"></div>
+            </div>
+        </div>
 
-    <!-- Профиль -->
-    <section id="profile-section" class="tab-section hidden">
-        <h1 class="text-xl font-bold mb-4">Профиль</h1>
-        <p>Данные пользователя Telegram будут здесь</p>
-    </section>
+        <div class="profile-header">
+            <div class="profile-avatar" id="profileAvatar">?</div>
+            <div class="profile-name" id="profileName">Завантаження...</div>
+            <div class="profile-username" id="profileUsername">@username</div>
+            <div class="profile-rank" id="profileRank">☃️ Новачок</div>
+            
+            <div class="profile-level">
+                <div class="level-info">
+                    <span>Рівень <span id="userLevel">1</span></span>
+                    <span><span id="currentExp">0</span>/<span id="neededExp">100</span> XP</span>
+                </div>
+                <div class="level-bar">
+                    <div class="level-fill" id="levelFill" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
 
-</main>
+        <div class="profile-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="postsCount">0</div>
+                <div class="stat-label">Постів</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="likesCount">0</div>
+                <div class="stat-label">Лайків</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="favoritesCount">0</div>
+                <div class="stat-label">Обране</div>
+            </div>
+        </div>
+    </div>
 
-<!-- Навигация -->
-<nav class="bg-neutral-900 p-3 flex justify-around border-t border-neutral-700">
-    <button onclick="showTab('gallery')" id="tab-gallery" class="tab-btn active-tab">🏠</button>
-    <button onclick="showTab('favorites')" id="tab-favorites" class="tab-btn">⭐</button>
-    <button onclick="showTab('profile')" id="tab-profile" class="tab-btn">👤</button>
-</nav>
+    <div class="page" id="galleryPage">
+        <h2 class="title">🖼️ Галерея</h2>
+        <div class="gallery-controls">
+            <select class="filter-select" id="dateFilter" onchange="filterPosts()">
+                <option value="all">Усі пости</option>
+                <option value="today">Сьогодні</option>
+                <option value="week">Цей тиждень</option>
+                <option value="month">Цей місяць</option>
+            </select>
+            <button class="add-post-btn" onclick="openCreateModal()">+</button>
+        </div>
 
-<!-- JS -->
-<script src="app.js"></script>
+        <div class="posts-grid" id="postsGrid">
+            <div class="empty-state">
+                <div class="empty-state-icon">⛷️</div>
+                <div class="empty-state-text">Поки що немає публікацій. Додайте свій перший пост!</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="favoritesPage">
+        <h2 class="title">⭐ Обране</h2>
+        <div class="posts-grid" id="favoritesGrid">
+            <div class="empty-state">
+                <div class="empty-state-icon">⭐</div>
+                <div class="empty-state-text">Немає обраних постів</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="settingsPage">
+        <div class="settings-section">
+            <h3 class="settings-title">🎨 Теми оформлення</h3>
+            <div class="theme-options">
+                <button class="theme-btn active" onclick="changeTheme('winter')">❄️ Зима</button>
+                <button class="theme-btn" onclick="changeTheme('autumn')">🍂 Осінь</button>
+                <button class="theme-btn" onclick="changeTheme('spring')">🌷 Весна</button>
+                <button class="theme-btn" onclick="changeTheme('summer')">☀️ Літо</button>
+            </div>
+        </div>
+
+        <div class="settings-section" id="adminMusic" style="display: none;">
+            <h3 class="settings-title">🎵 Фонова музика (Адмін)</h3>
+            <div class="music-control">
+                <span>Увімкнути музику</span>
+                <div class="toggle-switch" id="musicToggle" onclick="toggleMusic()">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3 class="settings-title">⚙️ Додатково</h3>
+            <button class="submit-btn" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);" onclick="alert('Функція видалення не реалізована в демо')">Видалити акаунт</button>
+        </div>
+    </div>
+
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Нова публікація</h2>
+                <button class="close-btn" onclick="closeCreateModal()">×</button>
+            </div>
+
+            <form id="createPostForm">
+                <div class="form-group">
+                    <label class="form-label">Фото або відео (до 100 МБ)</label>
+                    <div class="file-input-wrapper" onclick="document.getElementById('fileInput').click()">
+                        <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
+                        <div style="color: var(--text-secondary);">Виберіть файл</div>
+                        <input type="file" id="fileInput" class="file-input" accept="image/*,video/*">
+                        <div class="file-info" id="fileInfo" style="margin-top: 10px; color: var(--text-primary);"></div>
+                    </div>
+                    <div class="file-preview" id="filePreview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Опис</label>
+                    <textarea class="form-textarea" id="description" placeholder="Розкажіть про вашу публікацію..."></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span> / 150 слів
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Хештеги</label>
+                    <input type="text" class="form-input" id="hashtags" placeholder="#зима #гори #лижі">
+                </div>
+
+                <button type="submit" class="submit-btn">Опублікувати</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="viewModal">
+        <div class="modal-content" id="viewContent"></div>
+    </div>
+
+    <div class="navbar">
+        <div class="nav-item active" data-page="profile" onclick="switchPage('profile')">
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">Профіль</div>
+        </div>
+        <div class="nav-item" data-page="gallery" onclick="switchPage('gallery')">
+            <div class="nav-icon">🖼️</div>
+            <div class="nav-label">Галерея</div>
+        </div>
+        <div class="nav-item" data-page="favorites" onclick="switchPage('favorites')">
+            <div class="nav-icon">⭐</div>
+            <div class="nav-label">Обране</div>
+        </div>
+        <div class="nav-item" data-page="settings" onclick="switchPage('settings')">
+            <div class="nav-icon">⚙️</div>
+            <div class="nav-label">Налаштування</div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
